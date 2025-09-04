@@ -31,6 +31,11 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
 pub fn generate_dataset(depth: usize) {
     // Étape 1 : Generate positon for 3 zeros, 3 positive, 3 negative
     let positions: Vec<usize> = (0..9).collect();
+
+    // let mut pos_count = 0;
+    // let mut pos_count_1 = 0;
+    // let mut pos_count_2 = 0;
+
     for zero_pos in positions.into_iter().combinations(3) {
         // zero_pos is now  Vec<usize>
         let remaining: Vec<usize> = (0..9).filter(|&p| !zero_pos.contains(&p)).collect();
@@ -69,59 +74,61 @@ pub fn generate_dataset(depth: usize) {
                         continue;
                     }
 
-                    // check if the position is valid for each player
-                    let v1 = valid_pos(combination.to_vec(), 1);
-                    let v2 = valid_pos(combination.to_vec(), -1);
-                    let mut b_mv: GMove = (0, 0);
+                    for player in [1, -1] {
+                        let player_idx = if player == 1 { 1 } else { 2 };
+                        let pos = combination.to_vec();
+                        let pos_is_valid = valid_pos(&pos, player);
 
-                    // valid if player one is the current player
-                    if v1 {
-                        let mut b_moves: Vec<GMove> = Vec::new();
-                        // minimax(&combination, depth, 1, &mut b_mv, true);
-                        minimax_multi(&combination, depth, 1, true, &mut b_moves);
-                        let dist = moves_proba_comb(&b_moves, 9);
-                        println!(
-                            "{} 1 {}",
-                            combination.clone().into_iter().join(" "),
-                            dist.iter()
-                                .map(|x| format!("{:.4}", x))
-                                .collect::<Vec<_>>()
-                                .join(" ")
-                        );
-                    }
+                        // println!("Pos is valid: {pos_is_valid}");
+                        // if pos_is_valid {
+                        //     pos_count += 1;
+                        //     if player == 1 {
+                        //         pos_count_1 += 1
+                        //     } else {
+                        //         pos_count_2 += 1
+                        //     }
+                        // }
 
-                    // valid if the player 2 is the current player
-                    if v2 {
-                        // minimax(&combination, depth, -1, &mut b_mv, true);
+                        // skip invalid position
+                        if !pos_is_valid {
+                            continue;
+                        }
+
+                        // GENERATE BEST MOVE FOR VALID POSITION
+
+                        let (mut best_d, mut best_a): GMove = (0, 0);
+                        let mut proba = vec![0.0; 81];
                         let mut b_moves: Vec<GMove> = Vec::new();
-                        minimax_multi(&combination, depth, -1, true, &mut b_moves);
-                        let dist = moves_proba_comb(&b_moves, 9);
+
+                        minimax_multi(&combination, depth, player, true, &mut b_moves);
+                        (best_d, best_a) = b_moves[0];
+                        proba[best_d * 9 + best_a] = 1.0;
+
                         println!(
-                            "{} 2 {}",
-                            combination.clone().into_iter().join(" "),
-                            dist.iter()
-                                .map(|x| format!("{:.4}", x))
-                                .collect::<Vec<_>>()
-                                .join(" ")
+                            "{} {player_idx} {}",
+                            pos.iter().join(" "),
+                            proba.iter().join(" ")
                         );
                     }
                 }
             }
         }
     }
+    // println!("Valid pos count: {pos_count}, 1: {pos_count_1} 2: {pos_count_2}");
 }
 
 #[allow(dead_code, unused)]
-fn valid_pos(position: Vec<i32>, pl: i32) -> bool {
+pub fn valid_pos(position: &Vec<i32>, pl: i32) -> bool {
     let nei: HashMap<usize, Vec<usize>> = neighbours();
 
-    let opp: Vec<usize> = (0..9).filter(|&u| pl * position[u] == -2).collect();
+    let played_opp: Vec<usize> = (0..9).filter(|&u| pl * position[u] == -2).collect(); // opponent's played pieces
     let ally: Vec<usize> = (0..9).filter(|&u| pl * position[u] > 0).collect();
 
     // See if the previous player had a valid position
     let mut opp_had_played: bool = false;
-    for i in opp {
-        let nb_has_0 = nei.get(&i).unwrap().iter().any(|&u| u == 0);
+    for o in &played_opp {
+        let nbs = nei.get(&o).unwrap();
+        let nb_has_0 = nbs.iter().any(|&u| u == 0); // there is an empty neighbor
         if nb_has_0 {
             opp_had_played = true;
             break;
@@ -129,15 +136,18 @@ fn valid_pos(position: Vec<i32>, pl: i32) -> bool {
     }
 
     let mut pl_has_valid: bool = false;
-    for i in ally {
-        let nb_has_0 = nei.get(&i).unwrap().iter().any(|&u| u == 0);
+    for a in ally {
+        let nbs = nei.get(&a).unwrap();
+        let nbs_val = nbs.iter().map(|&idx| position[idx]).collect::<Vec<i32>>();
+
+        let nb_has_0 = nbs_val.iter().any(|&v| v == 0);
         if nb_has_0 {
             pl_has_valid = true;
             break;
         }
     }
 
-    opp_had_played && pl_has_valid
+    (opp_had_played || played_opp.len() == 0) && pl_has_valid
 }
 
 // ======================= BALANCIND DATASETS ============================

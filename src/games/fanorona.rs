@@ -2,11 +2,7 @@
 
 use std::{collections::HashMap, usize};
 
-use crate::{
-    games::minmax::minimax_multi,
-    nn::{NeuralNetwork, init::one_hot_fanorona},
-    testing::predict::predict_from_pos,
-};
+use crate::{games::minmax::minimax_multi, nn::NeuralNetwork, testing::predict::predict_from_pos};
 
 pub type FanoronaBoard = Vec<i32>;
 pub type GMove = (usize, usize);
@@ -89,10 +85,12 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
 
 pub fn possible(b: &FanoronaBoard, pl: i32) -> Vec<GMove> {
     let g_neighbours = neighbours();
+    // println!("Neigh: {:?}", g_neighbours);
     let mut moves: Vec<GMove> = vec![];
     for sq in 0..b.len() {
         let p = b[sq];
         if p * pl > 0 {
+            // println!("SQ: {sq}");
             let nei = g_neighbours.get(&sq).unwrap();
             for &n in nei {
                 if b[n] == 0 {
@@ -128,8 +126,28 @@ pub fn show_board(board: &FanoronaBoard) {
 #[allow(unused)]
 pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
     let mut nn: NeuralNetwork = NeuralNetwork::from_file(model.to_string());
-    let mut human_player = 1;
+    let mut human_player = -1;
     while g_over(board) == 0 {
+        // Bot play
+        println!("CPU...");
+
+        let mut moves: Vec<GMove> = Vec::new();
+        let pos: Vec<f64> = board[0..=8].iter().map(|&f| f as f64).collect();
+        let bot_player = if -human_player == 1 { 1 } else { 2 };
+        minimax_multi(&board, 7, -human_player, true, &mut moves);
+
+        let mut pos_to_predict = board.to_vec();
+        pos_to_predict.push(bot_player);
+        let nn_move = predict_from_pos(model, pos_to_predict);
+        println!("Minimax: {:?}, NN: {:?}", moves[0], nn_move);
+
+        let best_move = moves[0];
+
+        let played = play(board, best_move, -human_player);
+        if !played {
+            println!("CPU did not play !! it's move: {:?}", best_move);
+        }
+
         let mut input = String::new();
         show_board(&board.to_vec());
         // println!("> Joueur {} : ", (3 - human_player) / 2);
@@ -146,40 +164,8 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
         let a: usize = mv[1];
 
         let valid_play: bool = play(board, (d, a), human_player);
-        if valid_play {
-            println!("Human play");
-            show_board(&board);
-            // println!("human: G_over: {}", g_over(board));
 
-            println!("CPU...");
-
-            let mut moves: Vec<GMove> = Vec::new();
-            // minimax(board, 8, -human_player, &mut best_move, true); // using minimax bot
-
-            let pos: Vec<f64> = board[0..=8].iter().map(|&f| f as f64).collect();
-            let bot_player = if -human_player == 1 { 1 } else { 2 };
-            let cv_pos = one_hot_fanorona(pos, bot_player as usize);
-
-            // let ((d, pd), (a, pa)) = nn.predict(cv_pos.clone());
-            // (d, a);
-            //
-            // let ((d, _), (a, _)) = nn.predict(cv_pos); // using the network
-            // minimax(&board, 0, -human_player, &mut best_move, true);
-            minimax_multi(&board, 7, -human_player, true, &mut moves);
-
-            let mut pos_to_predict = board.to_vec();
-            pos_to_predict.push(bot_player);
-            let nn_move = predict_from_pos(model, pos_to_predict);
-            println!("Minimax: {:?}, NN: {:?}", moves[0], nn_move);
-
-            let best_move = moves[0];
-
-            let played = play(board, best_move, -human_player);
-            if !played {
-                println!("CPU did not play !! it's move: {:?}", best_move);
-            }
-            // println!("CPU: G_over: {}", g_over(board));
-        } else {
+        if !valid_play {
             println!("Invalid !!")
         }
         // println!("Board => {:?}", board);

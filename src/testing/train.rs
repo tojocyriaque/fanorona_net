@@ -24,7 +24,7 @@ pub fn batch_train(
     let mut positions = load_positions(tr_file);
     let mut shuffler = rand::thread_rng();
 
-    let eps = 1e-1;
+    let eps = 1e-2;
     let mut batch_loss = 0.0;
     model.lr = learning_rate;
 
@@ -37,7 +37,8 @@ pub fn batch_train(
 
     for epoch in i_epoch..i_epoch + n_epoch {
         positions.shuffle(&mut shuffler); // shuffle the positions each epoch
-
+        let mut epoch_loss = 0.0;
+        let mut batch_count = 0.0;
         let epoch_timer = std::time::Instant::now();
         for (b_idx, batch) in positions.chunks(batch_size).enumerate() {
             let norm_size = batch_size.min(batch.len());
@@ -54,16 +55,19 @@ pub fn batch_train(
 
             let (GW, GZ, bl) = model.batch_grads(&X, &Y);
             batch_loss = bl;
+            epoch_loss += batch_loss;
             model.batch_backward(&GW, &GZ);
-            println!("Batch {b_idx} loss: {batch_loss:.4}, pas: {:.4}", model.lr);
+            batch_count += 1.0;
+            // println!("Batch {b_idx} loss: {batch_loss:.4}, pas: {:.4}", model.lr);
         }
 
         let elapsed = epoch_timer.elapsed();
         println!(
-            "Epoque {}/{} terminée en {:.4?}",
+            "Epoque {}/{} terminée en {:.4?} loss: {}",
             epoch,
             i_epoch + n_epoch - 1,
-            elapsed
+            elapsed,
+            epoch_loss / batch_count
         );
         println!("---------------------------------------");
 

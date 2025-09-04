@@ -53,7 +53,7 @@ impl NeuralNetwork {
         //
         // // Pour éviter log(0), ajoute un petit epsilon
         let eps = 1e-12;
-        let log_probs = A_out.map_elms(|x| (x.max(eps)).ln());
+        let log_probs = A_out.map_elms(|val| (val.max(eps)).ln());
         //
         // // Perte = -sum(Y * log(A)) par ligne, puis moyenne
         let loss_per_sample: Vec<f64> = Y
