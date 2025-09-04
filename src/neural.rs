@@ -213,7 +213,7 @@ impl Neural {
         save_dir: &str,
     ) {
         let mut learning_rate = init_lr;
-        let eps = 0.0005;
+        let eps = 0.001;
         let output_size = *self.layers.last().unwrap();
         let mut datasets = load_dataset(tr_file, input_size, output_size);
         let mut shuffler = thread_rng();

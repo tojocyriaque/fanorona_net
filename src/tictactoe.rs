@@ -1,3 +1,5 @@
+use crate::neural::Neural;
+
 #[allow(dead_code)]
 pub fn one_hot_tictactoe(board: &[f64]) -> Vec<f64> {
     let mut board_1hot: Vec<f64> = Vec::new();
@@ -136,5 +138,55 @@ impl Game {
         }
 
         minimax_score
+    }
+
+    #[allow(unused)]
+    fn play_with_bot(&mut self, ne: &mut Neural) {
+        loop {
+            self.show();
+            println!("------");
+
+            let winner = self.game_over();
+            if winner != 0 {
+                let winner_str = if winner == 1 { "X" } else { "0" };
+                println!("Player {} wins !", winner_str);
+                break;
+            }
+            if self.draw() {
+                println!("Draw !!");
+                break;
+            }
+
+            let mut input = String::new();
+            if let Err(e) = std::io::stdin().read_line(&mut input) {
+                eprintln!("Error occured: {e} ");
+            }
+
+            input = input.strip_suffix("\n").unwrap().to_string();
+            let mut square: usize = 0;
+            match input.parse::<usize>() {
+                Ok(sq) => {
+                    assert!(sq < 9, "Invalid square !!");
+                    square = sq
+                }
+                Err(e) => {
+                    eprintln!("Error occured: {e} ");
+                }
+            }
+
+            self.play(square);
+            //  === MINIMAX
+            // let mut best = 0;
+            // self.best_move(true, &mut best);
+            // println!("Best from PC: ({best})");
+            let board_f64 = self.board.map(|f| f as f64);
+            let best = ne.predict_best(&board_f64, one_hot_tictactoe);
+
+            // println!("Board: {:?} => Best from CPU: {best}", board_f64);
+
+            if self.game_over() == 0 && !self.draw() {
+                self.play(best);
+            }
+        }
     }
 }
