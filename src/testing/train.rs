@@ -2,23 +2,15 @@ use rand::seq::SliceRandom;
 
 use crate::data::loads::*;
 use crate::nn::init::one_hot;
-use crate::nn::*;
 use crate::testing::predict::predict_moves;
-
-// this is the directory where you model will be registered
-const MODEL_PARAMS_DIR: &str = "models";
-// This is the identification of your model type
-const MODEL_TYPE: &str = "fn_model_v2";
-
-// Tests data to test after each epoch
-const TESTS_DATA_FILE: &str = "datasets/balanced_tests.txt";
+use crate::{MODEL_PARAMS_DIR, MODEL_TYPE, TRAIN_TEST_FILE, nn::*};
 
 #[allow(unused)]
 pub fn train_model(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
     let mut training_pos: Vec<Vec<i32>> = load_positions(filename);
 
     // Creating the model directory if it does not exist
-    let model_dir = "models/".to_owned() + MODEL_TYPE;
+    let model_dir = MODEL_PARAMS_DIR.to_owned() + "/" + MODEL_TYPE;
     match std::fs::create_dir_all(&model_dir) {
         Ok(()) => println!("Directory ensured to exist: {}", &model_dir),
         Err(e) => eprintln!("Failed to create directory: {}", e),
@@ -44,7 +36,7 @@ pub fn train_model(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
             nn.back_prop(&cv_pos, d_star, a_star + 9);
         }
 
-        let accuracy = predict_moves(nn, TESTS_DATA_FILE);
+        let accuracy = predict_moves(nn, TRAIN_TEST_FILE);
         println!("Epoch {epoch}/{epochs} finished! => {accuracy:.2}% accuracy");
 
         // Save parameters after each epoch
