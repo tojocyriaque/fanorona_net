@@ -1,17 +1,17 @@
 use crate::games::fanorona::*;
 
-pub fn minimax_generic<Game, GMvType>(
-    game: &Game,
-    depth: usize,
-    is_max: i32,
-    is_root: bool, // to see if it's a root node of the move sequence tree
-    b_mv: &mut GMvType,
-) -> f64
-where
-    Game:,
-{
-    0.0
-}
+// pub fn minimax_generic<Game, GMvType>(
+//     game: &Game,
+//     depth: usize,
+//     is_max: i32,
+//     is_root: bool, // to see if it's a root node of the move sequence tree
+//     b_mv: &mut GMvType,
+// ) -> f64
+// where
+//     Game:,
+// {
+//     0.0
+// }
 
 // Minimax algorithm to find best move
 pub fn minimax(
@@ -56,7 +56,7 @@ pub fn minimax_multi(
     depth: usize,
     is_max: i32,
     is_root: bool,
-    moves: &mut Vec<GMove>,
+    moves: &mut Vec<(GMove)>,
 ) -> i32 {
     let winner = g_over(b);
     if depth == 0 || winner != 0 {
@@ -79,7 +79,7 @@ pub fn minimax_multi(
         if is_max == 1 && ev > minmax_score || is_max == -1 && ev < minmax_score {
             minmax_score = ev;
             if is_root {
-                let idx = moves.len() - 1;
+                let idx = moves.len();
                 moves.insert(idx, mv);
             }
         } else if is_root {
