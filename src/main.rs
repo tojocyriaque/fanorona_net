@@ -22,23 +22,23 @@ fn main() {
     let tr_file = "dataset/fanorona/all.txt";
 
     // ==== load model
-    let model = "models/fn_d6/epoch_30.bin";
+    let model = "models/fn_d6_3/epoch_30.bin";
     let mut ne = Neural::load_from_bin(model).unwrap();
 
     // ==== new model
     // let mut ne = Neural::xavier(layers, input_size);
-    // let train_start = std::time::Instant::now();
-    // let save_dir = "models/fn_d6";
-    // ne.train(epochs, lr, board_size, batch_size, tr_file, save_dir);
-    // let train_elapsed = train_start.elapsed();
+    let train_start = std::time::Instant::now();
+    let save_dir = "models/fn_d6_4";
+    ne.train(epochs, lr, board_size, batch_size, tr_file, save_dir);
+    let train_elapsed = train_start.elapsed();
 
     let acc = ne.test(board_size, tr_file, one_hot_fanorona, valid_fn3_move);
-    // println!(
-    //     "Accuracy: {:.4}%, Train time: {:?}",
-    //     acc * 100.0,
-    //     train_elapsed
-    // );
-    println!("Meilleures coups: {:?}%", acc * 100.0);
+    println!(
+        "Meilleurs coups: {:.4}%, Train time: {:?}",
+        acc * 100.0,
+        train_elapsed
+    );
+    // println!("Meilleures coups: {:?}%", acc * 100.0);
 
     // let mut tictactoe = Game::new();
     // play(&mut tictactoe, &mut ne);
