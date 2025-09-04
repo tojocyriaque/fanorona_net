@@ -116,21 +116,26 @@ impl NeuralNetwork {
 
     pub fn predict(&self, x: &Vector) -> ((usize, f64), (usize, f64)) {
         let sf: Vector = self.feed_forward(x.to_vec())[self.ln - 1].clone();
+        let mut d_star = 0;
+        let mut a_star = 0;
 
-        // Max of the first softmax
-        let (d, pd): (usize, &f64) = sf[0..=8]
-            .into_iter()
-            .enumerate()
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-            .unwrap();
+        let mut pd_star = 0.0;
+        let mut pa_star = 0.0;
 
-        // Max of the second softmax
-        let (a, pa): (usize, &f64) = sf[9..=17]
-            .into_iter()
-            .enumerate()
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-            .unwrap();
+        for (u, p) in sf[0..9].iter().enumerate() {
+            if pd_star < *p {
+                pd_star = *p;
+                d_star = u;
+            }
+        }
 
-        ((d, *pd), (a + 8, *pa))
+        for (u, p) in sf[9..].iter().enumerate() {
+            if pa_star < *p {
+                pa_star = *p;
+                a_star = u;
+            }
+        }
+
+        ((d_star, pd_star), (a_star, pa_star))
     }
 }

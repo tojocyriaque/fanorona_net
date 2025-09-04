@@ -50,21 +50,22 @@ fn train(nn: &mut NeuralNetwork, tr_pos: Vec<Vec<i32>>, epochs: usize) {
             let ((d, pd), (a, pa)) = nn.predict(&cv_pos);
             let sample_loss: f64 = -pa.ln() - pd.ln();
 
+            println!("Target: {:?} , Prediction: {:?}", (d_star, a_star), (d, a));
             if d == d_star && a == a_star {
                 correct += 1;
-                println!("Target: {:?} , Prediction: {:?}", (d_star, a_star), (d, a));
             }
 
             loss += sample_loss;
+            println!("Loss: {sample_loss}");
             count += 1;
         });
 
-        println!(
-            "Époque {}/{} terminée, perte moyenne: {} Correctes: {}",
-            epoch + 1,
-            epochs,
-            loss / count as f64,
-            correct
-        );
+        // println!(
+        //     "Époque {}/{} terminée, perte moyenne: {} Correctes: {}",
+        //     epoch + 1,
+        //     epochs,
+        //     loss / count as f64,
+        //     correct
+        // );
     }
 }
