@@ -13,9 +13,9 @@ fn main() {
     // ============== MODEL AND TRAINING CONSTANTS ================
     let input_size = 46;
     let output_size = 81;
-    let lr = 0.5;
-    let epochs = 0;
-    let layers = vec![512, output_size];
+    let lr = 0.8;
+    let epochs = 150;
+    let layers = vec![256, output_size];
     let batch_size = 32;
 
     let board_size = 10; // the size of the game board (for fanorona3x3: 10 <the last element is the current player>)
@@ -24,15 +24,15 @@ fn main() {
     let tr_file = "dataset/fanorona/all.txt";
 
     // ==== load model from binaries
-    let model = "models/fn_d6_7/epoch_10.bin";
-    let mut ne = Neural::load_from_bin(model).unwrap();
+    // let model = "models/fn_d6_7/epoch_10.bin";
+    // let mut ne = Neural::load_from_bin(model).unwrap();
 
     // ==== new model (creating new model from nothing)
-    // let mut ne = Neural::xavier(layers, input_size);
+    let mut ne = Neural::xavier(layers, input_size);
 
     // ================= TRAINING ========================
     let train_start = std::time::Instant::now();
-    let save_dir = "models/fn_d6_8";
+    let save_dir = "models/fn_d6_lw";
     ne.train(epochs, lr, board_size, batch_size, tr_file, save_dir);
     let train_elapsed = train_start.elapsed();
 
