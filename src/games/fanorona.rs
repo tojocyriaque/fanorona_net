@@ -5,7 +5,6 @@ use std::{collections::HashMap, usize};
 use crate::{
     games::minmax::minimax,
     nn::{NeuralNetwork, init::one_hot},
-    testing::predict::predict_from_pos,
 };
 
 pub type FanoronaBoard = Vec<i32>;
@@ -172,10 +171,11 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
             let player = if -curr_player == 1 { 1 } else { 2 };
             let cv_pos = one_hot(p.to_vec(), player as usize);
 
-            let ((d, pd), (a, pa)) = nn.predict(cv_pos.clone());
-            (d, a);
-
-            let ((d, _), (a, _)) = nn.predict(cv_pos); // using the network
+            // let ((d, pd), (a, pa)) = nn.predict(cv_pos.clone());
+            // (d, a);
+            //
+            // let ((d, _), (a, _)) = nn.predict(cv_pos); // using the network
+            minimax(&board, 7, -curr_player, &mut best_move, true);
             best_move = (d, a);
             let played = play(board, best_move, -curr_player);
             if !played {

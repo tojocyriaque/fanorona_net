@@ -19,10 +19,10 @@ pub fn init_vectors(ls: &Vec<usize>, rand_init: bool) -> Vec<Vector> {
 #[allow(unused)]
 pub fn init_matrixes(ls: &Vec<usize>, is: usize, rand_init: bool) -> Vec<Matrix> {
     let mut matrixes = Vec::new();
-    matrixes.push(Matrix::init_xavier(ls[0], is)); // first layer
+    matrixes.push(Matrix::init_xavier(is, ls[0])); // first layer
     for (idx, &m) in ls[1..].iter().enumerate() {
         let n = ls[idx];
-        matrixes.push(Matrix::init_xavier(m, n));
+        matrixes.push(Matrix::init_xavier(n, m));
     }
     matrixes
 }

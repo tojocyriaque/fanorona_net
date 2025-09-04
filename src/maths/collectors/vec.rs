@@ -11,10 +11,18 @@ impl Vector {
         self.0.extend(v.0);
     }
 }
-// ================ INITIALISATION ===============
+// ================ INITIALIZATION ===============
 impl Vector {
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    pub fn sum(&self) -> f64 {
+        self.iter().sum()
+    }
+
+    pub fn mean(&self) -> f64 {
+        self.sum() / self.len() as f64
     }
 
     #[allow(unused)]
@@ -61,6 +69,13 @@ impl Vector {
 impl std::ops::Index<usize> for Vector {
     type Output = f64;
     fn index(&self, index: usize) -> &Self::Output {
+        &self.0[index]
+    }
+}
+
+impl std::ops::Index<std::ops::Range<usize>> for Vector {
+    type Output = [f64];
+    fn index(&self, index: std::ops::Range<usize>) -> &Self::Output {
         &self.0[index]
     }
 }

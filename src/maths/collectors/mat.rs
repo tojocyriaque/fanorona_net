@@ -37,6 +37,81 @@ impl Matrix {
 
         Matrix(result)
     }
+
+    // vertical extension
+    pub fn extend_ver(&mut self, rhs: Matrix) {
+        self.0.extend(rhs.0);
+    }
+
+    // horizontal extension
+    pub fn extend_hor(&mut self, rhs: &Matrix) {
+        self.0
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(u, v)| v.0.extend(&rhs[u].0));
+    }
+
+    pub fn map_elms<F>(&self, f: F) -> Matrix
+    where
+        F: Fn(f64) -> f64,
+    {
+        let (m, n) = self.dim();
+        let mut mapped: Vec<Vector> = Vec::new();
+        for i in 0..m {
+            let mut ve: Vec<f64> = Vec::new();
+            for j in 0..n {
+                ve.push(f(self[i][j]));
+            }
+            mapped.push(Vector(ve));
+        }
+        Matrix(mapped)
+    }
+
+    pub fn map_lines<F, T>(&self, f: F) -> Vec<T>
+    where
+        F: Fn(&Vector) -> T,
+    {
+        let (m, _) = self.dim();
+        let mut v: Vec<T> = Vec::new();
+        for i in 0..m {
+            v.push(f(&self[i]));
+        }
+        v
+    }
+
+    pub fn map_cols<F, T>(&self, f: F) -> Vec<T>
+    where
+        F: Fn(&Vector) -> T,
+    {
+        let mut v: Vec<T> = Vec::new();
+        let tr = self.tr();
+        for j in 0..tr.len() {
+            v.push(f(&tr[j]))
+        }
+        v
+    }
+
+    pub fn add_each_line(self, rhs: &Vector) -> Matrix {
+        let mut m: Vec<Vector> = Vec::new();
+        for v in self.0 {
+            m.push(&v + rhs);
+        }
+        Matrix(m)
+    }
+
+    pub fn add_each_col<F>(self, rhs: &Vector) -> Matrix {
+        let (m, n) = self.dim();
+        let mut matr: Vec<Vector> = Vec::new();
+
+        for i in 0..m {
+            let mut ve: Vec<f64> = Vec::new();
+            for j in 0..n {
+                ve.push(rhs[j] + self[i][j]);
+            }
+            matr.push(Vector(ve));
+        }
+        Matrix(matr)
+    }
 }
 
 // ============== INDEXING ==============================
@@ -54,6 +129,13 @@ impl std::ops::Index<(usize, usize)> for Matrix {
     }
 }
 
+impl std::ops::Index<std::ops::RangeInclusive<usize>> for Matrix {
+    type Output = [Vector];
+    fn index(&self, index: std::ops::RangeInclusive<usize>) -> &Self::Output {
+        &self.0[index]
+    }
+}
+
 impl std::ops::IndexMut<usize> for Matrix {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.0[index]
@@ -68,13 +150,13 @@ impl std::ops::IndexMut<(usize, usize)> for Matrix {
 
 // ============== TRANSPOSE =============================
 impl Matrix {
-    fn tr(&self) -> Self {
+    pub fn tr(&self) -> Self {
         let result = (0..self[0].len())
-            .into_iter()
+            .into_par_iter()
             .map(|i: usize| {
                 Vector(
                     (0..self.len())
-                        .into_par_iter()
+                        .into_iter()
                         .map(|j: usize| self[j][i])
                         .collect(),
                 )
@@ -185,4 +267,10 @@ macro_rules! mat {
                 $(Vector(vec![$($x as f64),*])),*]
         )
     };
+
+    ($x:expr;$y:expr)=>{
+        Matrix(
+            vec![$x;$y]
+        )
+    }
 }
