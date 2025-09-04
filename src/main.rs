@@ -29,7 +29,7 @@ fn main() {
     // generate_dataset(7);
 
     // ==================== MODEL CREATION
-    let layer_sizes: Vec<usize> = vec![64, 128, 256, 512, 1024, 18];
+    let layer_sizes: Vec<usize> = vec![64, 128, 18];
     let input_size = 46;
     let batch_size = 100;
     let learning_rate = 0.02;
