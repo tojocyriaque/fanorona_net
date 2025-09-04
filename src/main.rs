@@ -13,7 +13,7 @@ mod tictactoe;
 fn main() {
     let input_size = 46;
     let output_size = 81;
-    let lr = 0.8;
+    let lr = 0.5;
     let epochs = 30;
     let layers = vec![512, output_size];
 
@@ -22,13 +22,13 @@ fn main() {
     let tr_file = "dataset/fanorona/all.txt";
 
     // ==== load model
-    let model = "models/fn_d6_3/epoch_30.bin";
+    let model = "models/fn_d6_5/epoch_30.bin";
     let mut ne = Neural::load_from_bin(model).unwrap();
 
     // ==== new model
     // let mut ne = Neural::xavier(layers, input_size);
     let train_start = std::time::Instant::now();
-    let save_dir = "models/fn_d6_4";
+    let save_dir = "models/fn_d6_6";
     ne.train(epochs, lr, board_size, batch_size, tr_file, save_dir);
     let train_elapsed = train_start.elapsed();
 
