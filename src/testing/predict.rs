@@ -32,8 +32,18 @@ pub fn predict_moves(nn: &mut NeuralNetwork, filename: &str) -> f64 {
         }
         pos_len += 1;
     }
-
     100.0 * correct as f64 / pos_len as f64
+}
+
+#[allow(unused)]
+pub fn predict_from_pos(model: &str, pos: Vec<i32>) -> (usize, usize) {
+    let mut nn = NeuralNetwork::from_file(model.to_string());
+    let p = &pos[0..=8];
+    let player = &pos[9];
+    let cv_pos = one_hot(p.to_vec(), *player as usize);
+
+    let ((d, pd), (a, pa)) = nn.predict(cv_pos);
+    (d, a)
 }
 
 #[allow(unused)]
