@@ -1,12 +1,47 @@
-use std::u32;
-
+use rand::random;
 use rayon::iter::{
     IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
 };
 
+// Initialisations of Vectors
+pub fn init_vectors(ls: &Vec<usize>, rand_init: bool) -> Vec2d {
+    ls.iter()
+        .enumerate()
+        .map(|(_, &l)| {
+            (0..l)
+                .map(|_| if rand_init { random::<f64>() } else { 0.0 })
+                .collect()
+        })
+        .collect()
+}
+
+// If the random_init is set it will be Xavier / Glorot initialisation
+pub fn init_matrixes(ls: &Vec<usize>, is: usize, rand_init: bool) -> Vec<Vec2d> {
+    ls.iter()
+        .enumerate()
+        .map(|(i, &l)| {
+            let col_num = if i == 0 { is } else { ls[i - 1] };
+            (0..l)
+                .map(|_| {
+                    (0..col_num)
+                        .map(|_| {
+                            if rand_init {
+                                let bound = (6.0 / (col_num + l) as f64).sqrt();
+                                (random::<f64>() * 2.0 - 1.0) * bound
+                            } else {
+                                0.0
+                            }
+                        })
+                        .collect()
+                })
+                .collect()
+        })
+        .collect()
+}
+
 // ==================== TYPES =========================
 pub type Vector = Vec<f64>;
-pub type Matrix = Vec<Vector>;
+pub type Vec2d = Vec<Vector>;
 
 // Conversion
 #[allow(dead_code)]
@@ -53,13 +88,13 @@ pub fn scal_prod(v1: &Vector, v2: &Vector) -> f64 {
 // ==================== MATRIX CALCULATIONS =====================
 // Make matrix and Vector product using multiple cores
 #[allow(dead_code, unused_variables)]
-pub fn mat_vec_prod(m: &Matrix, v: &Vector) -> Vector {
+pub fn mat_vec_prod(m: &Vec2d, v: &Vector) -> Vector {
     m.par_iter().map(|row| scal_prod(row, v)).collect()
 }
 
 #[allow(dead_code, unused_variables)]
 // transpose matrix
-pub fn mat_tr(m: &Matrix) -> Matrix {
+pub fn mat_tr(m: &Vec2d) -> Vec2d {
     (0..m[0].len())
         .into_par_iter()
         .map(|i: usize| {
@@ -72,8 +107,8 @@ pub fn mat_tr(m: &Matrix) -> Matrix {
 }
 
 #[allow(dead_code, unused_variables)]
-pub fn mat_prod(m1: &Matrix, m2: &Matrix) -> Matrix {
-    let m2_t: Matrix = mat_tr(m2);
+pub fn mat_prod(m1: &Vec2d, m2: &Vec2d) -> Vec2d {
+    let m2_t: Vec2d = mat_tr(m2);
 
     (0..m1.len())
         .into_par_iter()
@@ -87,8 +122,9 @@ pub fn mat_prod(m1: &Matrix, m2: &Matrix) -> Matrix {
 
 // ==================== ACTIVATION FUNCTIONS ====================
 #[allow(dead_code)]
-pub fn sigmoid(x: f64) -> f64 {
-    1. / 1. + (-x).exp()
+pub fn sigmoid(z: f64) -> f64 {
+    let z = z.clamp(-100.0, 100.0);
+    1.0 / (1.0 + (-z).exp())
 }
 
 #[allow(dead_code)]
@@ -97,62 +133,16 @@ pub fn re_lu(x: f64) -> f64 {
 }
 
 #[allow(dead_code)]
-pub fn softmax(y: Vector) -> Vector {
-    let sum: f64 = y.par_iter().map(|y_i: &f64| y_i.exp()).sum();
-    y.par_iter().map(|y_i: &f64| y_i.exp() / sum).collect()
-}
-
-// pub struct SimpleRng {
-//     state: u32,
-// }
-
-// Fonction d'initialisation aléatoire simple
-pub fn rand_f32() -> f64 {
-    static mut STATE: u32 = 123456789;
-    unsafe {
-        STATE ^= STATE << 13;
-        STATE ^= STATE >> 17;
-        STATE ^= STATE << 5;
-        (STATE as f64) / (u32::MAX as f64)
+pub fn softmax(y: &Vector) -> Vector {
+    let max_y = y.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let exps: Vector = y
+        .iter()
+        .map(|&y_i| (y_i - max_y).clamp(-100.0, 100.0).exp())
+        .collect();
+    let sum: f64 = exps.iter().sum();
+    if sum == 0.0 {
+        vec![1.0 / y.len() as f64; y.len()] // Distribution uniforme si somme nulle
+    } else {
+        exps.iter().map(|&x| x / sum).collect()
     }
 }
-
-// impl SimpleRng {
-//     pub fn new(seed: u32) -> Self {
-//         Self { state: seed }
-//     }
-
-//     /// retourne un u64 pseudo-aléatoire
-//     fn next_u32(&mut self) -> u32 {
-//         // constants for LCG (from Numerical Recipes style)
-//         self.state = self.state.wrapping_mul(u32::MAX).wrapping_add(u32::MIN);
-//         self.state
-//     }
-
-//     /// retourne un f64 dans (-0.5, 0.5)
-//     pub fn next_f32_centered(&mut self) -> f64 {
-//         let r = self.next_u32();
-//         // convertir sur [0,1)
-//         let u = (r as f64) / (u64::MAX as f64 + 1.0);
-//         u - 0.5
-//     }
-// }
-
-// /// Utilitaires linéaires et math
-// #[allow(dead_code)]
-// pub fn softmax_stable(x: &Vec<f64>) -> Vec<f64> {
-//     // calcule softmax de x (stabilité numérique)
-//     let max_x = x.iter().cloned().fold(std::f64::NEG_INFINITY, f64::max);
-//     let mut exps: Vec<f64> = x.iter().map(|v| (v - max_x).exp()).collect();
-//     let sum: f64 = exps.iter().sum();
-//     if sum == 0.0 {
-//         // éviter division par 0: renvoyer distribution uniforme
-//         let n = exps.len();
-//         vec![1.0 / n as f64; n]
-//     } else {
-//         for e in &mut exps {
-//             *e /= sum;
-//         }
-//         exps
-//     }
-// }
