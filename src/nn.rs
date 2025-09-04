@@ -16,12 +16,12 @@ pub struct NeuralNetwork {
 
 impl NeuralNetwork {
     // Let's add the weight here so it is easier to use new parameters from files
-    pub fn new(ln: usize, ls: &Vec<usize>, is: usize, lr: f64) -> Self {
+    pub fn new(ls: &Vec<usize>, is: usize, lr: f64) -> Self {
         // let mut rng = SimpleRng::new(58);
         NeuralNetwork {
             is: is,
             lr: lr,
-            ln: ln,
+            ln: ls.len(),
             ls: ls.to_vec(),
             weights: init_matrixes(ls, is, true),
             biases: init_vectors(ls, false),
