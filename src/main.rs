@@ -32,16 +32,16 @@ fn main() {
 
     // // ==================== MODEL CREATION ===============================
     let tr_file = "datasets/depth7/bl_tr.txt";
-    let model_name = "fn_md_all_v5";
+    let model_name = "fn_md_all_v6";
     let models_dir = "models";
 
-    let layer_sizes: Vec<usize> = vec![64, 128, 256, 18];
-    let learning_rate = 0.97;
+    let layer_sizes: Vec<usize> = vec![512, 18];
+    let learning_rate = 0.1;
     let input_size = 46;
 
-    let initial_epoch = 1;
+    let initial_epoch = 201;
     let n_epoch = 100;
-    let batch_size = 5000; // make it the tr_file length for full batch
+    let batch_size = 6896; // make it the tr_file length for full batch
 
     // ========== TESTING THE LAST MODEL before continue training
     let mut model: NeuralNetwork;
@@ -80,7 +80,7 @@ fn main() {
         "models/{model_name}/{model_name}_E_{}.bin",
         initial_epoch - 1 + n_epoch
     );
-    test_model(model_bin.as_str(), "datasets/depth7/min_bl.txt");
+    test_model(model_bin.as_str(), tr_file);
 
     // =================================== PLAYING IN CONSOLE (for model testing maybe)
     // let mut i_board = vec![0, 0, 1, 1, 1, -1, -1, 0, -1];

@@ -10,6 +10,17 @@ use crate::{
 pub type FanoronaBoard = Vec<i32>;
 pub type GMove = (usize, usize);
 
+// Heuristic evaluation
+pub fn evaluate_board(b: &FanoronaBoard) -> i32 {
+    let winner: i32 = g_over(b);
+
+    if winner != 0 {
+        return 10 * winner;
+    }
+
+    b.iter().sum()
+}
+
 fn swap_minmax(min: &mut i32, max: &mut i32, val: &mut i32) {
     *max = *max.max(val);
     *min = *min.min(val);
