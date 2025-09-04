@@ -2,7 +2,11 @@
 
 use std::{collections::HashMap, usize};
 
-use crate::{games::minmax::minimax, nn::NeuralNetwork};
+use crate::{
+    games::minmax::minimax,
+    nn::{NeuralNetwork, init::one_hot},
+    testing::predict::predict_from_pos,
+};
 
 pub type FanoronaBoard = Vec<i32>;
 pub type GMove = (usize, usize);
@@ -74,12 +78,12 @@ pub fn play(b: &mut FanoronaBoard, (s, e): GMove, pl: i32) -> bool {
         }
     }
 
-    println!(
-        "Mouvements possibles: {:?}, {:?} ?? {}",
-        moves,
-        (s, e),
-        move_is_possible
-    );
+    // println!(
+    //     "Mouvements possibles: {:?}, {:?} ?? {}",
+    //     moves,
+    //     (s, e),
+    //     move_is_possible
+    // );
     false
 }
 
@@ -145,30 +149,43 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
         // println!("> Joueur {} : ", (3 - curr_player) / 2);
 
         std::io::stdin().read_line(&mut input);
-        let pos: Vec<usize> = input
+        let mv: Vec<usize> = input
             .strip_suffix("\n")
             .unwrap()
             .split(" ")
             .map(|u| u.parse().unwrap())
             .collect();
 
-        let d: usize = pos[0];
-        let a: usize = pos[1];
+        let d: usize = mv[0];
+        let a: usize = mv[1];
 
         let valid_play: bool = play(board, (d, a), curr_player);
         if valid_play {
-            println!("human: G_over: {}", g_over(board));
+            // println!("human: G_over: {}", g_over(board));
 
             println!("CPU...");
 
             let mut best_move = (0, 0);
-            minimax(board, 8, -curr_player, &mut best_move, true);
-            play(board, best_move, -curr_player);
-            println!("CPU: G_over: {}", g_over(board));
+            // minimax(board, 8, -curr_player, &mut best_move, true); // using minimax bot
+
+            let p = &board[0..=8];
+            let player = if -curr_player == 1 { 1 } else { 2 };
+            let cv_pos = one_hot(p.to_vec(), player as usize);
+
+            let ((d, pd), (a, pa)) = nn.predict(cv_pos.clone());
+            (d, a);
+
+            let ((d, _), (a, _)) = nn.predict(cv_pos); // using the network
+            best_move = (d, a);
+            let played = play(board, best_move, -curr_player);
+            if !played {
+                println!("CPU did not play !! it's move: {:?}", best_move);
+            }
+            // println!("CPU: G_over: {}", g_over(board));
         } else {
-            println!("Invalide !!")
+            println!("Invalid !!")
         }
-        println!("Board => {:?}", board);
+        // println!("Board => {:?}", board);
     }
 
     println!("Game is over!!")
