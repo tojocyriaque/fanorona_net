@@ -8,14 +8,14 @@ mod nn;
 mod utils;
 
 const LR: f64 = 0.1;
-const EPOCHS: usize = 20;
-
+const EPOCHS: usize = 10;
+const POS_LEN: usize = 50000;
 fn main() {
     let mut positions: Vec<Vec<i32>> = Vec::new();
     // let mut rnd = thread_rng();
     let mut _c = 0;
     for line in read_to_string("datasets.txt").unwrap().lines() {
-        if _c == 7000 {
+        if _c == POS_LEN {
             break;
         }
         let pos: Vec<i32> = line.split(" ").map(|u| u.parse().unwrap()).collect();
@@ -27,7 +27,7 @@ fn main() {
     // for pos in &positions {
     //     println!("{}", pos.into_iter().join(" "));
     // }
-    let mut nn: NeuralNetwork = NeuralNetwork::new(&vec![128, 128, 18], 46, LR);
+    let mut nn: NeuralNetwork = NeuralNetwork::new(&vec![31, 18], 46, LR);
     train(&mut nn, positions, EPOCHS);
 }
 
@@ -50,22 +50,23 @@ fn train(nn: &mut NeuralNetwork, tr_pos: Vec<Vec<i32>>, epochs: usize) {
             let ((d, pd), (a, pa)) = nn.predict(&cv_pos);
             let sample_loss: f64 = -pa.ln() - pd.ln();
 
-            println!("Target: {:?} , Prediction: {:?}", (d_star, a_star), (d, a));
+            // println!("Target: {:?} , Prediction: {:?}", (d_star, a_star), (d, a));
             if d == d_star && a == a_star {
                 correct += 1;
             }
 
             loss += sample_loss;
-            println!("Loss: {sample_loss}");
+            // println!("Loss: {sample_loss}");
             count += 1;
         });
 
-        // println!(
-        //     "Époque {}/{} terminée, perte moyenne: {} Correctes: {}",
-        //     epoch + 1,
-        //     epochs,
-        //     loss / count as f64,
-        //     correct
-        // );
+        println!(
+            "Époque {}/{} terminée, perte moyenne: {} Correctes: {}, Précision: {}",
+            epoch + 1,
+            epochs,
+            loss / count as f64,
+            correct,
+            correct as f64 / POS_LEN as f64,
+        );
     }
 }
