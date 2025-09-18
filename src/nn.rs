@@ -1,10 +1,8 @@
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-
 use crate::utils::{
     Vec2d, Vector, init_matrixes, init_vectors, mat_vec_prod, sigmoid, softmax, vec_sum,
 };
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-#[derive(Debug)]
 pub struct NeuralNetwork {
     pub ln: usize,      // Layers number
     pub ls: Vec<usize>, // Layers sizes (the output layer is in count)
@@ -37,7 +35,7 @@ impl NeuralNetwork {
         z[0] = vec_sum(&mat_vec_prod(&self.weights[0], &x), &self.biases[0]);
         a[0] = z[0].par_iter().map(|&u: &f64| sigmoid(u)).collect();
 
-        // Couches cachées (sigmoid)
+        // Hidden layers (sigmoid)
         for i in 1..self.ln {
             z[i] = vec_sum(&mat_vec_prod(&self.weights[i], &a[i - 1]), &self.biases[i]);
 
@@ -49,7 +47,7 @@ impl NeuralNetwork {
             }
         }
 
-        // Couche de sortie
+        // Output layer
         let sf1 = softmax(&z[self.ln - 1].clone()[0..=8].to_vec());
         let sf2 = softmax(&z[self.ln - 1].clone()[9..].to_vec());
         a[self.ln - 1] = [sf1.clone(), sf2.clone()].concat();
@@ -99,7 +97,9 @@ impl NeuralNetwork {
 
         // Updating parameters
         for k in 0..self.ln {
+            // Size of the previous layer
             let prev_len = if k > 0 { self.ls[k - 1] } else { x.len() };
+
             // W = W - lr * DW
             for i in 0..self.ls[k] {
                 for j in 0..prev_len {
@@ -122,6 +122,7 @@ impl NeuralNetwork {
         let mut pd_star = 0.0;
         let mut pa_star = 0.0;
 
+        // Finding the best probability in the first softmax
         for (u, p) in sf[0..9].iter().enumerate() {
             if pd_star < *p {
                 pd_star = *p;
@@ -129,6 +130,7 @@ impl NeuralNetwork {
             }
         }
 
+        // Finding the best probability in the second softmax
         for (u, p) in sf[9..].iter().enumerate() {
             if pa_star < *p {
                 pa_star = *p;
