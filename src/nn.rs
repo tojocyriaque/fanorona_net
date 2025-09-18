@@ -7,7 +7,7 @@ use crate::utils::{
 #[derive(Debug)]
 pub struct NeuralNetwork {
     pub ln: usize,      // Layers number
-    pub ls: Vec<usize>, // Layers sizes
+    pub ls: Vec<usize>, // Layers sizes (the output layer is in count)
     pub weights: Vec<Vec2d>,
     pub biases: Vec2d,
     pub lr: f64,

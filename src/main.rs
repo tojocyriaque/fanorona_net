@@ -9,9 +9,12 @@ mod utils;
 
 const LR: f64 = 0.1;
 const EPOCHS: usize = 10;
-const POS_LEN: usize = 50000;
+const POS_LEN: usize = 61238;
+
 fn main() {
+    let layer_sizes: Vec<usize> = vec![31, 18];
     let mut positions: Vec<Vec<i32>> = Vec::new();
+
     // let mut rnd = thread_rng();
     let mut _c = 0;
     for line in read_to_string("datasets.txt").unwrap().lines() {
@@ -23,11 +26,7 @@ fn main() {
         _c += 1;
     }
 
-    // positions.shuffle(&mut rnd);
-    // for pos in &positions {
-    //     println!("{}", pos.into_iter().join(" "));
-    // }
-    let mut nn: NeuralNetwork = NeuralNetwork::new(&vec![31, 18], 46, LR);
+    let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, 46, LR);
     train(&mut nn, positions, EPOCHS);
 }
 
