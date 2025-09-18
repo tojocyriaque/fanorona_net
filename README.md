@@ -1,13 +1,12 @@
-# Implémentation d'un Réseau de Neurones
+# Implémentation d'un Réseau de Neurones de fanorontelo (jeu malagasy)
 
-Ce dépôt contient une implémentation en Rust d'un réseau de neurones à propagation avant avec rétropropagation, conçu pour une tâche de classification avec deux groupes de sorties softmax. L'implémentation utilise la crate `rayon` pour des calculs parallélisés et inclut des fonctions utilitaires pour les opérations sur les matrices et les vecteurs.
+Ce dépôt contient une implémentation en Rust d'un réseau de neurones, conçu pour trouver le meilleur coup d'une position de fanorontelo (jeu de strategie malagasy).
 
 ## Bibliothèques Utilisées
 - **Rayon** : Bibliothèque Rust pour le parallélisme des données, utilisée pour accélérer les calculs sur les vecteurs et matrices.
 - **Utils (interne)** : Module personnalisé contenant des fonctions utilitaires pour l'initialisation des matrices/vecteurs, les produits matrice-vecteur, et les fonctions sigmoïde et softmax.
 
 ## Documentation Mathématique
-
 ### Notation
 - **L** : Nombre de couches, incluant les couches d'entrée, cachées et de sortie.
 - **ls** : Vecteur des tailles des couches, où `ls[k]` est le nombre de neurones dans la couche `k`.
@@ -23,6 +22,7 @@ Ce dépôt contient une implémentation en Rust d'un réseau de neurones à prop
 - **softmax(z)** : Fonction softmax, définie comme `softmax(z)_i = e^(z_i) / Σ_j e^(z_j)`.
 
 ### Modèle
+- **Entrée**: Vecteur contenant les informations de la position (chaque point est codé en one-hot), à la fin on ajoute la représentaion du joueur actuelle.
 - **Structure** : Réseau à `L` couches avec `ls[0]` neurones en entrée, `ls[1]` à `ls[L-2]` pour les couches cachées, et `ls[L-1]` pour la sortie.
 - **Initialisation** : Poids `W_k` initialisés aléatoirement, biais `b_k` à zéro ou petites valeurs, avec un taux d'apprentissage `lr`.
 - **Propagation avant** :
