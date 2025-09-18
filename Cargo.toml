@@ -1,0 +1,9 @@
+[package]
+name = "fanorona_bot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rayon = "1.0.8"
+itertools = "0.14"
+rand = "0.8"
