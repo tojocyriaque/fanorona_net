@@ -98,3 +98,7 @@ La fonction `predict` retourne les classes les plus probables et leurs probabili
 - **Descente de Gradient** : Met à jour les paramètres en utilisant le taux d'apprentissage `lr`.
 
 Cette implémentation est conçue pour une tâche de classification avec deux groupes de sorties, utilisant des activations sigmoïdes et softmax pour gérer les relations non linéaires et la classification multi-classes.
+
+## Bibliothèques Utilisées
+- **Rayon** : Bibliothèque Rust pour le parallélisme des données, utilisée pour accélérer les calculs sur les vecteurs et matrices.
+- **Utils (interne)** : Module personnalisé contenant des fonctions utilitaires pour l'initialisation des matrices/vecteurs, les produits matrice-vecteur, et les fonctions sigmoïde et softmax.
