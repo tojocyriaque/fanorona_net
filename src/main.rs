@@ -1,3 +1,5 @@
+use std::fs::read_to_string;
+
 use rand::seq::SliceRandom;
 
 use crate::{
@@ -12,7 +14,7 @@ mod utils;
 
 const LEARNING_RATE: f64 = 0.1;
 const EPOCHS: usize = 50;
-const MODEL_PARAMS_DIR: &str = "models";
+const MODEL_PARAMS_DIR: &str = "models/FN_BOT_1L";
 const TESTS_DATA_FILE: &str = "datasets/tests.txt";
 const TRAIN_DATA_FILE: &str = "datasets/trainings.txt";
 
@@ -24,27 +26,25 @@ fn main() {
     // inspect_dataset(TESTS_DATA_FILE);
 
     // TESTING PREDICTIONS
-    // let mut nn: NeuralNetwork =
-    //     NeuralNetwork::from_file(format!("{MODEL_PARAMS_DIR}/FN_BOT_E49.bin"));
+    let mut nn: NeuralNetwork =
+        NeuralNetwork::from_file("models/FN_BOT_1L/FN_BOT_1L_E49.bin".to_owned());
     // predict_moves(&mut nn, TESTS_DATA_FILE);
 
     // TRAINING
-    // let layer_sizes: Vec<usize> = vec![34, 120, 18];
+    // let layer_sizes: Vec<usize> = vec![256, 18];
     // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, 46, LEARNING_RATE);
 
-    // train(&mut nn, TRAIN_DATA_FILE, EPOCHS);
+    train(&mut nn, TRAIN_DATA_FILE, EPOCHS);
 }
 
 #[allow(unused)]
 fn predict_moves(nn: &mut NeuralNetwork, filename: &str) {
-    let mut shuffler = rand::thread_rng();
     let mut test_pos: Vec<Vec<i32>> = load_positions(filename);
-
-    test_pos.shuffle(&mut shuffler);
 
     let mut correct = 0;
     let mut pos_len = 0;
-    for (idx, pos) in test_pos.iter().enumerate() {
+    for (idx, line) in read_to_string(filename).unwrap().lines().enumerate() {
+        let pos: Vec<i32> = line.split(" ").map(|s| s.parse().unwrap()).collect();
         let p = &pos[0..=8];
         let player = &pos[9];
         let d_star: usize = pos[10] as usize;
@@ -72,6 +72,8 @@ fn train(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
 
     let mut shuffler = rand::thread_rng();
     for epoch in 0..epochs {
+        // avoir the network to learn from the same positions
+        // allow it to view various positions order
         training_pos.shuffle(&mut shuffler);
 
         for (_, pos) in training_pos.iter().enumerate() {
@@ -86,18 +88,11 @@ fn train(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
             nn.back_prop(&cv_pos, d_star, a_star + 9);
         }
 
-        // Vérifier les poids de la dernière couche
-        let w_sum: f64 = nn.weights[nn.ln - 1].iter().flatten().sum();
-        let b_sum: f64 = nn.biases[nn.ln - 1].iter().sum();
-        println!(
-            "Poids dernière couche somme: {:.6}, Biais somme: {:.6}",
-            w_sum, b_sum
-        );
-
+        print!("Epoch {epoch}:  ");
         predict_moves(nn, TESTS_DATA_FILE);
         // Save parameters after each epoch
         if let Err(e) =
-            save_parameters_binary(nn, format!("{MODEL_PARAMS_DIR}/FN_BOT_E{epoch}.bin"))
+            save_parameters_binary(nn, format!("{MODEL_PARAMS_DIR}/FN_BOT_1L_E{epoch}.bin"))
         {
             eprintln!(
                 "Erreur lors de la sauvegarde binaire à l'époque {}: {}",
