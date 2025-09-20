@@ -1,21 +1,23 @@
-use std::fs::read_to_string;
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 use rand::seq::SliceRandom;
 
 use crate::{
     nn::NeuralNetwork,
-    utils::{load_positions, one_hot, save_parameters_binary},
+    utils::{inits::*, loads::*},
 };
 
-mod dataset_gen;
-mod game;
 mod nn;
 mod utils;
 
+#[allow(unused)]
 const LEARNING_RATE: f64 = 0.1;
 const EPOCHS: usize = 50;
 const MODEL_PARAMS_DIR: &str = "models/FN_BOT_1L";
-const TESTS_DATA_FILE: &str = "datasets/tests.txt";
+const TESTS_DATA_FILE: &str = "datasets/balanced_tests.txt";
 const TRAIN_DATA_FILE: &str = "datasets/trainings.txt";
 
 fn main() {
@@ -30,7 +32,7 @@ fn main() {
         NeuralNetwork::from_file("models/FN_BOT_1L/FN_BOT_1L_E49.bin".to_owned());
     // predict_moves(&mut nn, TESTS_DATA_FILE);
 
-    // TRAINING
+    // TRAINING NEW MODELS
     // let layer_sizes: Vec<usize> = vec![256, 18];
     // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, 46, LEARNING_RATE);
 
@@ -41,10 +43,20 @@ fn main() {
 fn predict_moves(nn: &mut NeuralNetwork, filename: &str) {
     let mut test_pos: Vec<Vec<i32>> = load_positions(filename);
 
+    let file = File::open(filename).unwrap();
+    let reader = BufReader::new(file);
+
     let mut correct = 0;
     let mut pos_len = 0;
-    for (idx, line) in read_to_string(filename).unwrap().lines().enumerate() {
-        let pos: Vec<i32> = line.split(" ").map(|s| s.parse().unwrap()).collect();
+
+    for (idx, line_result) in reader.lines().enumerate() {
+        // read line one by one
+        let pos: Vec<i32> = line_result
+            .unwrap()
+            .split(" ")
+            .map(|s| s.parse().unwrap())
+            .collect();
+
         let p = &pos[0..=8];
         let player = &pos[9];
         let d_star: usize = pos[10] as usize;
@@ -94,11 +106,7 @@ fn train(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
         if let Err(e) =
             save_parameters_binary(nn, format!("{MODEL_PARAMS_DIR}/FN_BOT_1L_E{epoch}.bin"))
         {
-            eprintln!(
-                "Erreur lors de la sauvegarde binaire à l'époque {}: {}",
-                epoch + 1,
-                e
-            );
+            eprintln!("Error on saving parameters for epoch {}: {}", epoch + 1, e);
         }
     }
 }

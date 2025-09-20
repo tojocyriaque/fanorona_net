@@ -1,3 +1,5 @@
+// =============== GAME LOGIC HERE =====================
+
 use std::{collections::HashMap, usize};
 
 pub type GBoard = Vec<i32>;
