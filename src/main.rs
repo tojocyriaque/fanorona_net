@@ -1,8 +1,8 @@
-use std::fs::read_to_string;
+use rand::seq::SliceRandom;
 
 use crate::{
     nn::NeuralNetwork,
-    utils::{one_hot, save_parameters_binary},
+    utils::{load_positions, one_hot, save_parameters_binary},
 };
 
 mod dataset_gen;
@@ -10,38 +10,71 @@ mod game;
 mod nn;
 mod utils;
 
-const LR: f64 = 0.1;
-const EPOCHS: usize = 10;
-const POS_LEN: usize = 28000;
+const LEARNING_RATE: f64 = 0.1;
+const EPOCHS: usize = 50;
 const MODEL_PARAMS_DIR: &str = "models";
-fn main() {
-    // let params = load_parameters_binary(format!("{MODEL_PARAMS_DIR}/FN_BOT_E0.bin"))
-    //     .expect("Échec du chargement");
-    // println!("Taux d'apprentissage chargé : {}", params.learning_rate);
-    // println!("Taille des couches: {:?}", params.layer_sizes);
-    // println!(
-    //     "Biais de la couche de sortie: {:?}",
-    //     params.biases[params.layer_sizes.len() - 1]
-    // );
+const TESTS_DATA_FILE: &str = "datasets/tests.txt";
+const TRAIN_DATA_FILE: &str = "datasets/trainings.txt";
 
-    let layer_sizes: Vec<usize> = vec![128, 18];
-    let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, 46, LR);
-    train(&mut nn, "datasets.txt", EPOCHS);
+fn main() {
+    // CHECK THE DATASET
+    // println!("Dataset de l'entrainement: ");
+    // inspect_dataset(TRAIN_DATA_FILE);
+    // println!("Dataset de tests");
+    // inspect_dataset(TESTS_DATA_FILE);
+
+    // TESTING PREDICTIONS
+    // let mut nn: NeuralNetwork =
+    //     NeuralNetwork::from_file(format!("{MODEL_PARAMS_DIR}/FN_BOT_E49.bin"));
+    // predict_moves(&mut nn, TESTS_DATA_FILE);
+
+    // TRAINING
+    // let layer_sizes: Vec<usize> = vec![34, 120, 18];
+    // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, 46, LEARNING_RATE);
+
+    // train(&mut nn, TRAIN_DATA_FILE, EPOCHS);
 }
 
-fn train(nn: &mut NeuralNetwork, data_filename: &str, epochs: usize) {
+#[allow(unused)]
+fn predict_moves(nn: &mut NeuralNetwork, filename: &str) {
+    let mut shuffler = rand::thread_rng();
+    let mut test_pos: Vec<Vec<i32>> = load_positions(filename);
+
+    test_pos.shuffle(&mut shuffler);
+
+    let mut correct = 0;
+    let mut pos_len = 0;
+    for (idx, pos) in test_pos.iter().enumerate() {
+        let p = &pos[0..=8];
+        let player = &pos[9];
+        let d_star: usize = pos[10] as usize;
+        let a_star: usize = pos[11] as usize;
+        let cv_pos = one_hot(p.to_vec(), *player as usize);
+
+        let ((d, pd), (a, pa)) = nn.predict(&cv_pos);
+        if d == d_star && a == a_star {
+            correct += 1;
+        }
+        pos_len += 1;
+    }
+
+    println!(
+        "{}/{} => Précision:{:.2} %",
+        correct,
+        pos_len,
+        100.0 * correct as f64 / pos_len as f64,
+    );
+}
+
+#[allow(unused)]
+fn train(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
+    let mut training_pos: Vec<Vec<i32>> = load_positions(filename);
+
+    let mut shuffler = rand::thread_rng();
     for epoch in 0..epochs {
-        let mut loss = 0.0;
-        let mut count = 0;
-        let mut correct = 0;
+        training_pos.shuffle(&mut shuffler);
 
-        for (idx, line) in read_to_string(data_filename).unwrap().lines().enumerate() {
-            // Break after a certain number of positions (do not load all of the data)
-            if idx + 1 == POS_LEN {
-                break;
-            }
-
-            let pos: Vec<i32> = line.split(" ").map(|u| u.parse().unwrap()).collect();
+        for (_, pos) in training_pos.iter().enumerate() {
             let p = &pos[0..=8];
             let player = &pos[9];
             let cv_pos = one_hot(p.to_vec(), *player as usize);
@@ -49,29 +82,19 @@ fn train(nn: &mut NeuralNetwork, data_filename: &str, epochs: usize) {
             let d_star: usize = pos[10] as usize;
             let a_star: usize = pos[11] as usize;
 
+            // update the parameters
             nn.back_prop(&cv_pos, d_star, a_star + 9);
-            let ((d, pd), (a, pa)) = nn.predict(&cv_pos);
-            let sample_loss: f64 = -pa.ln() - pd.ln();
-
-            // println!("Target: {:?} , Prediction: {:?}", (d_star, a_star), (d, a));
-            if d == d_star && a == a_star {
-                correct += 1;
-            }
-
-            // println!("Loss: {sample_loss}");
-            loss += sample_loss;
-            count += 1;
         }
 
+        // Vérifier les poids de la dernière couche
+        let w_sum: f64 = nn.weights[nn.ln - 1].iter().flatten().sum();
+        let b_sum: f64 = nn.biases[nn.ln - 1].iter().sum();
         println!(
-            "Époque {}/{} terminée, perte moyenne: {} Correctes: {}, Précision: {}",
-            epoch + 1,
-            epochs,
-            loss / count as f64,
-            correct,
-            correct as f64 / POS_LEN as f64,
+            "Poids dernière couche somme: {:.6}, Biais somme: {:.6}",
+            w_sum, b_sum
         );
 
+        predict_moves(nn, TESTS_DATA_FILE);
         // Save parameters after each epoch
         if let Err(e) =
             save_parameters_binary(nn, format!("{MODEL_PARAMS_DIR}/FN_BOT_E{epoch}.bin"))

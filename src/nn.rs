@@ -1,5 +1,6 @@
 use crate::utils::{
-    Vec2d, Vector, init_matrixes, init_vectors, mat_vec_prod, sigmoid, softmax, vec_sum,
+    Vec2d, Vector, init_matrixes, init_vectors, load_parameters_binary, mat_vec_prod, sigmoid,
+    softmax, vec_sum,
 };
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -9,10 +10,23 @@ pub struct NeuralNetwork {
     pub weights: Vec<Vec2d>,
     pub biases: Vec2d,
     pub lr: f64,
-    pub is: usize,
+    pub is: usize, // input size
 }
 
 impl NeuralNetwork {
+    #[allow(unused)]
+    pub fn from_file(filename: String) -> Self {
+        let params = load_parameters_binary(filename).expect("Échec du chargement");
+        NeuralNetwork {
+            is: params.input_size,
+            ls: params.layer_sizes,
+            weights: params.weights,
+            biases: params.biases,
+            lr: params.learning_rate,
+            ln: params.layer_num,
+        }
+    }
+
     // Let's add the weight here so it is easier to use new parameters from files
     pub fn new(ls: &Vec<usize>, is: usize, lr: f64) -> Self {
         // let mut rng = SimpleRng::new(58);
@@ -38,10 +52,7 @@ impl NeuralNetwork {
         // Hidden layers (sigmoid)
         for i in 1..self.ln {
             z[i] = vec_sum(&mat_vec_prod(&self.weights[i], &a[i - 1]), &self.biases[i]);
-
-            // println!("{:?}", z[i]);
-
-            // skip the output layer
+            // skip output layer
             if i < self.ln - 1 {
                 a[i] = z[i].par_iter().map(|&u: &f64| sigmoid(u)).collect();
             }
@@ -58,12 +69,11 @@ impl NeuralNetwork {
 
     pub fn back_prop(&mut self, x: &Vector, d_star: usize, a_star: usize) {
         let a: Vec2d = self.feed_forward(x.clone());
-        // LOSS: - log (Pd(d*) * Pa(a*));
+        // LOSS: - log(Pd(d*)) -log(Pa(a*));
         // dL / da
 
         let mut dz: Vec2d = init_vectors(&self.ls, false);
         let mut dw: Vec<Vec2d> = init_matrixes(&self.ls, self.is, false);
-
         for i in 0..self.ls[self.ln - 1] {
             let kron_di = if i == d_star { 1.0 } else { 0.0 };
             let kron_ai = if i == a_star { 1.0 } else { 0.0 };
@@ -71,26 +81,27 @@ impl NeuralNetwork {
         }
 
         // Descent for the hidden layers
-        for k in (0..self.ln).rev() {
-            let prev_act = if k == 0 { x.clone() } else { a[k - 1].clone() };
+        for k in (0..=self.ln - 1).rev() {
+            // previous activation (if it is the first layer then the prev_act is x)
+            let prev_activation = if k == 0 { x.clone() } else { a[k - 1].clone() };
+
             // dwk
             // db = dz
             for i in 0..self.ls[k] {
-                for j in 0..prev_act.len() {
-                    dw[k][i][j] = dz[k][i] * prev_act[j];
+                for j in 0..prev_activation.len() {
+                    dw[k][i][j] = dz[k][i] * prev_activation[j];
                 }
             }
 
-            // da(k-1)
+            // dz(k-1)
             if k > 0 {
                 for i in 0..self.ls[k - 1] {
-                    let mut da_i = 0.0;
-                    for j in 0..self.ls[k] {
-                        da_i += dz[k][j] * self.weights[k][j][i];
-                    }
+                    let da_i: f64 = (0..self.ls[k])
+                        .map(|j| dz[k][j] * self.weights[k][j][i])
+                        .sum();
 
                     // dzk (sigmoid except for the output layer)
-                    dz[k - 1][i] = da_i * a[k - 1][i] * (a[k - 1][i] - 1.0);
+                    dz[k - 1][i] = da_i * a[k - 1][i] * (1.0 - a[k - 1][i]);
                 }
             }
         }
@@ -123,18 +134,16 @@ impl NeuralNetwork {
         let mut pa_star = 0.0;
 
         // Finding the best probability in the first softmax
-        for (u, p) in sf[0..9].iter().enumerate() {
-            if pd_star < *p {
-                pd_star = *p;
+        for u in 0..18 {
+            let p = sf[u];
+            if pd_star < p && u < 9 {
+                pd_star = p;
                 d_star = u;
             }
-        }
 
-        // Finding the best probability in the second softmax
-        for (u, p) in sf[9..].iter().enumerate() {
-            if pa_star < *p {
-                pa_star = *p;
-                a_star = u;
+            if pa_star < p && u > 8 {
+                pa_star = p;
+                a_star = u - 9;
             }
         }
 
