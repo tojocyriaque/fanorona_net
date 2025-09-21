@@ -1,90 +1,89 @@
-use crate::{nn::NeuralNetwork, utils::inits::*, utils::matrixes::*, utils::vectors::*, utils::*};
-use rayon::iter::*;
+use crate::{
+    maths::{
+        activations::{sigmoid::Sigmoid, softmax::Softmax},
+        collectors::mat::*,
+        collectors::vec::*,
+    },
+    nn::{
+        NeuralNetwork,
+        init::{init_matrixes, init_vectors},
+    },
+};
 
 impl NeuralNetwork {
     // forward propagation returning activations for all layers
-    pub fn feed_forward(&self, x: Vector) -> Vec2d {
-        // println!("{:?}", self.biases[0]);
-        let mut z: Vec2d = init_vectors(&self.ls, false);
-        let mut a: Vec2d = init_vectors(&self.ls, false);
+    pub fn feed_forward(&self, x: VecStruct) -> Vec<VecStruct> {
+        let mut z: Vec<VecStruct> = Vec::new();
+        let mut a: Vec<VecStruct> = Vec::new();
 
-        // Hidden layers (sigmoid)
-        for i in 0..self.ln {
-            // if i is 0, the previous layer is the inputs
-            let previous = if i == 0 { &x } else { &a[i - 1] };
+        // input layer
 
-            z[i] = vec_sum(&mat_vec_prod(&self.weights[i], previous), &self.biases[i]);
-            // skip sigmoid for output layer
+        // println!("x:{:?}; w:{:?}", x.len(), self.weights[0].dim());
+        z.push(&x * &self.weights[0] + &self.biases[0]);
+        a.push((&z[0]).sigmoid());
+
+        for i in 1..self.ln {
+            z.push(&a[i - 1] * &self.weights[i] + &self.biases[i]);
             if i < self.ln - 1 {
-                a[i] = z[i].par_iter().map(|&u: &f64| sigmoid(u)).collect();
+                a.push((&z[i]).sigmoid());
             }
         }
 
-        // Output layer
-        let sf1 = softmax(&z[self.ln - 1].clone()[0..=8].to_vec()); // first 9 elements
-        let sf2 = softmax(&z[self.ln - 1].clone()[9..].to_vec()); // last 9 elements
-        a[self.ln - 1] = [sf1.clone(), sf2.clone()].concat();
+        let sf1 = (&z[self.ln - 1].0[0..=8].to_vec()).softmax();
+        let sf2 = (&z[self.ln - 1].0[9..].to_vec()).softmax();
 
-        // println!("{} {} => {}", sf1.len(), sf2.len(), a[self.ln - 1].len());
-        return a;
+        a.push(VecStruct([sf1, sf2].concat()));
+        a
     }
 
-    pub fn back_prop(&mut self, x: &Vector, d_star: usize, a_star: usize) {
-        let a: Vec2d = self.feed_forward(x.clone());
-        // LOSS: - log(Pd(d*)) -log(Pa(a*));
-        // dL / da
+    pub fn back_prop(&mut self, x: &VecStruct, d_star: usize, a_star: usize) {
+        let a: Vec<VecStruct> = self.feed_forward(x.clone());
 
-        let mut dz: Vec2d = init_vectors(&self.ls, false);
-        let mut dw: Vec<Vec2d> = init_matrixes(&self.ls, self.is, false);
+        // Partial derivatives
+        let mut dz: Vec<VecStruct> = init_vectors(&self.ls, false);
+        let mut dw: Vec<Mat> = init_matrixes(&self.ls, self.is, false);
+
+        // LOSS: - log(Pd(d*)) -log(Pa(a*));
+
+        // dL / dz(n)i = a(n)i - kron(d,i) - krond(a,i)
+        // dL / da(k-1)i = SUM( dz(k)j * w(k)ji )j
+        // dL / dz(k-1)i = (dL / da(k-1)i) * a(k-1)i * (1 - a(k-1)i)
+
         for i in 0..self.ls[self.ln - 1] {
-            let kron_di = if i == d_star { 1.0 } else { 0.0 }; // kroneker(d_star,i)
-            let kron_ai = if i == a_star { 1.0 } else { 0.0 }; // kroneker(a_star,i)
+            let kron_di = if i == d_star { 1.0 } else { 0.0 };
+            let kron_ai = if i == a_star { 1.0 } else { 0.0 };
             dz[self.ln - 1][i] = a[self.ln - 1][i] - kron_di - kron_ai;
         }
 
-        // Descent for the hidden layers (ln-1 -> 0)
+        // dL / dW(k)ij = (dL/dz(k)i) * a(k-1)j
         for k in (0..=self.ln - 1).rev() {
-            // previous activation (if it is the first layer then the prev_act is x)
-            let prev_activation = if k == 0 { &x } else { &a[k - 1] };
+            // m x n matrix
+            let m = self.ls[k];
+            let prev_act = if k == 0 { x } else { &a[k - 1] };
+            let n = prev_act.len();
 
-            // dwk
-            // db = dz
-            for i in 0..self.ls[k] {
-                for j in 0..prev_activation.len() {
-                    dw[k][i][j] = dz[k][i] * prev_activation[j];
+            for i in 0..m {
+                for j in 0..n {
+                    dw[k][i][j] = dz[k][i] * prev_act[j]
                 }
             }
 
             // dz(k-1)
             if k > 0 {
-                for i in 0..self.ls[k - 1] {
-                    let mut da_i = 0.0; // d(a-1)i (not necessary to add this in RAM)
-                    for j in 0..self.ls[k] {
+                for i in 0..n {
+                    let mut da_i = 0.0; // da(k-1)i
+                    for j in 0..m {
                         da_i += dz[k][j] * self.weights[k][j][i];
                     }
-
-                    // dzk (sigmoid except for the output layer)
-                    dz[k - 1][i] = da_i * a[k - 1][i] * (1.0 - a[k - 1][i]);
+                    dz[k - 1][i] = da_i * a[k - 1][i] * (1.0 - a[k - 1][i])
                 }
             }
         }
 
         // Updating parameters
         for k in 0..self.ln {
-            // Size of the previous layer
-            let prev_len = if k > 0 { self.ls[k - 1] } else { x.len() };
-
-            // W = W - lr * DW
-            for i in 0..self.ls[k] {
-                for j in 0..prev_len {
-                    self.weights[k][i][j] -= self.lr * dw[k][i][j];
-                }
-            }
-
-            // B = B - lr * DB (But db = dz)
-            for i in 0..self.ls[k] {
-                self.biases[k][i] -= self.lr * dz[k][i];
-            }
+            self.biases[k] = &self.biases[k] - self.lr * &dz[k];
+            self.weights[k] = &self.weights[k] - &(self.lr * &dw[k]);
         }
     }
 }
