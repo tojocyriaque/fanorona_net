@@ -7,8 +7,8 @@ pub mod prediction;
 pub struct NeuralNetwork {
     pub ln: usize,      // Layers number
     pub ls: Vec<usize>, // Layers sizes (the output layer is in count)
-    pub weights: Vec<Mat>,
-    pub biases: Vec<VecStruct>,
+    pub weights: Vec<Matrix>,
+    pub biases: Vec<Vector>,
     pub lr: f64,
     pub is: usize, // input size
 }

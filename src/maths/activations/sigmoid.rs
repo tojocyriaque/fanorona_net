@@ -1,4 +1,4 @@
-use crate::maths::collectors::vec::VecStruct;
+use crate::maths::collectors::vec::Vector;
 
 // ==================== IMPLEMENTATIONS FOR SIGMOID =================================
 pub trait Sigmoid {
@@ -14,16 +14,16 @@ impl Sigmoid for f64 {
     }
 }
 
-impl Sigmoid for VecStruct {
+impl Sigmoid for Vector {
     type Output = Self;
     fn sigmoid(self) -> Self::Output {
         let result = self.0.iter().map(|u| u.sigmoid()).collect();
-        VecStruct(result)
+        Vector(result)
     }
 }
 
-impl Sigmoid for &VecStruct {
-    type Output = VecStruct;
+impl Sigmoid for &Vector {
+    type Output = Vector;
     fn sigmoid(self) -> Self::Output {
         self.clone().sigmoid()
     }

@@ -37,14 +37,20 @@ pub fn train_model(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
         }
 
         let accuracy = predict_moves(nn, TRAIN_TEST_FILE);
-        println!("Epoch {epoch}/{epochs} finished! => {accuracy:.2}% accuracy");
+        println!(
+            "Epoch {}/{epochs} finished! => {accuracy:.2}% accuracy",
+            epoch + 1
+        );
 
         // Save parameters after each epoch
         if let Err(e) =
             // Saving the model parameters after each epoch
             save_parameters_binary(
                 nn,
-                format!("{MODEL_PARAMS_DIR}/{MODEL_TYPE}/{MODEL_TYPE}_E{epoch}.bin"),
+                format!(
+                    "{MODEL_PARAMS_DIR}/{MODEL_TYPE}/{MODEL_TYPE}_E{}.bin",
+                    epoch + 1
+                ),
             )
         {
             eprintln!("Error on saving parameters for epoch {}: {}", epoch + 1, e);

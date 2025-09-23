@@ -1,6 +1,6 @@
 // ================================ IMPLEMENTATIONS FOR SOFTMAX ====================================
 
-use crate::maths::collectors::vec::VecStruct;
+use crate::maths::collectors::vec::Vector;
 
 pub trait Softmax {
     type Output;
@@ -31,16 +31,16 @@ impl Softmax for &Vec<f64> {
     }
 }
 
-impl Softmax for VecStruct {
+impl Softmax for Vector {
     type Output = Self;
     fn softmax(self) -> Self::Output {
-        VecStruct(self.0.softmax())
+        Vector(self.0.softmax())
     }
 }
 
-impl Softmax for &VecStruct {
-    type Output = VecStruct;
+impl Softmax for &Vector {
+    type Output = Vector;
     fn softmax(self) -> Self::Output {
-        VecStruct((&self.0).softmax())
+        Vector((&self.0).softmax())
     }
 }

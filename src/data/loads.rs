@@ -6,7 +6,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    maths::collectors::{mat::Mat, vec::VecStruct},
+    maths::collectors::{mat::Matrix, vec::Vector},
     nn::NeuralNetwork,
 };
 
@@ -17,8 +17,8 @@ pub struct NNParameters {
     pub input_size: usize,
     pub layer_num: usize,
     pub layer_sizes: Vec<usize>,
-    pub weights: Vec<Mat>,
-    pub biases: Vec<VecStruct>,
+    pub weights: Vec<Matrix>,
+    pub biases: Vec<Vector>,
     pub learning_rate: f64,
 }
 

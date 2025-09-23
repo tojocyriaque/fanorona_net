@@ -12,36 +12,36 @@ use crate::{
 
 impl NeuralNetwork {
     // forward propagation returning activations for all layers
-    pub fn feed_forward(&self, x: VecStruct) -> Vec<VecStruct> {
-        let mut z: Vec<VecStruct> = Vec::new();
-        let mut a: Vec<VecStruct> = Vec::new();
+    pub fn feed_forward(&self, x: Vector) -> Vec<Vector> {
+        let mut z: Vec<Vector> = Vec::new();
+        let mut a: Vec<Vector> = Vec::new();
 
         // input layer
 
         // println!("x:{:?}; w:{:?}", x.len(), self.weights[0].dim());
-        z.push(&x * &self.weights[0] + &self.biases[0]);
+        z.push(&(&x * &self.weights[0]) + &self.biases[0]);
         a.push((&z[0]).sigmoid());
 
         for i in 1..self.ln {
-            z.push(&a[i - 1] * &self.weights[i] + &self.biases[i]);
+            z.push(&(&a[i - 1] * &self.weights[i]) + &self.biases[i]);
             if i < self.ln - 1 {
                 a.push((&z[i]).sigmoid());
             }
         }
 
-        let sf1 = (&z[self.ln - 1].0[0..=8].to_vec()).softmax();
-        let sf2 = (&z[self.ln - 1].0[9..].to_vec()).softmax();
+        let sf1 = (&z[self.ln - 1][0..=8].to_vec()).softmax();
+        let sf2 = (&z[self.ln - 1][9..=17].to_vec()).softmax();
 
-        a.push(VecStruct([sf1, sf2].concat()));
+        a.push(Vector([sf1, sf2].concat()));
         a
     }
 
-    pub fn back_prop(&mut self, x: &VecStruct, d_star: usize, a_star: usize) {
-        let a: Vec<VecStruct> = self.feed_forward(x.clone());
+    pub fn back_prop(&mut self, x: &Vector, d_star: usize, a_star: usize) {
+        let a: Vec<Vector> = self.feed_forward(x.clone());
 
         // Partial derivatives
-        let mut dz: Vec<VecStruct> = init_vectors(&self.ls, false);
-        let mut dw: Vec<Mat> = init_matrixes(&self.ls, self.is, false);
+        let mut dz: Vec<Vector> = init_vectors(&self.ls, false);
+        let mut dw: Vec<Matrix> = init_matrixes(&self.ls, self.is, false);
 
         // LOSS: - log(Pd(d*)) -log(Pa(a*));
 
@@ -55,13 +55,13 @@ impl NeuralNetwork {
             dz[self.ln - 1][i] = a[self.ln - 1][i] - kron_di - kron_ai;
         }
 
-        // dL / dW(k)ij = (dL/dz(k)i) * a(k-1)j
         for k in (0..=self.ln - 1).rev() {
             // m x n matrix
             let m = self.ls[k];
             let prev_act = if k == 0 { x } else { &a[k - 1] };
             let n = prev_act.len();
 
+            // dL / dW(k)ij = (dL/dz(k)i) * a(k-1)j
             for i in 0..m {
                 for j in 0..n {
                     dw[k][i][j] = dz[k][i] * prev_act[j]
@@ -82,7 +82,7 @@ impl NeuralNetwork {
 
         // Updating parameters
         for k in 0..self.ln {
-            self.biases[k] = &self.biases[k] - self.lr * &dz[k];
+            self.biases[k] = &self.biases[k] - &(self.lr * &dz[k]);
             self.weights[k] = &self.weights[k] - &(self.lr * &dw[k]);
         }
     }
