@@ -1,8 +1,8 @@
-use crate::{nn::NeuralNetwork, utils::vectors::*};
+use crate::nn::*;
 
 impl NeuralNetwork {
-    pub fn predict(&self, x: &Vector) -> ((usize, f64), (usize, f64)) {
-        let sf: Vector = self.feed_forward(x.to_vec())[self.ln - 1].clone();
+    pub fn predict(&self, x: Vector) -> ((usize, f64), (usize, f64)) {
+        let sf: &Vector = &self.feed_forward(x)[self.ln - 1];
         let mut d_star = 0;
         let mut a_star = 0;
 
