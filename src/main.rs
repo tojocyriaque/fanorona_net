@@ -1,86 +1,37 @@
-use std::fs::read_to_string;
-
+#[allow(unused)]
 use crate::{
     nn::NeuralNetwork,
-    utils::{one_hot, save_parameters_binary},
+    testing::{predict::test_model, train::train_model},
 };
 
-mod dataset_gen;
-mod game;
+mod data;
+mod games;
+mod maths;
 mod nn;
-mod utils;
+mod testing;
 
-const LR: f64 = 0.1;
-const EPOCHS: usize = 10;
-const POS_LEN: usize = 28000;
+// ==================== TRAINING CONSTANTS ==============================
+const LEARNING_RATE: f64 = 0.1;
+const EPOCHS: usize = 20;
+const TRAIN_DATA_FILE: &str = "datasets/trainings.txt";
+const TRAIN_TEST_FILE: &str = "datasets/balanced_tests.txt";
+// this is the directory where you model will be registered
 const MODEL_PARAMS_DIR: &str = "models";
+//This is the identification of your model type
+const MODEL_TYPE: &str = "fn_model_v5";
+const INPUT_SIZE: usize = 46;
+
 fn main() {
-    // let params = load_parameters_binary(format!("{MODEL_PARAMS_DIR}/FN_BOT_E0.bin"))
-    //     .expect("Échec du chargement");
-    // println!("Taux d'apprentissage chargé : {}", params.learning_rate);
-    // println!("Taille des couches: {:?}", params.layer_sizes);
-    // println!(
-    //     "Biais de la couche de sortie: {:?}",
-    //     params.biases[params.layer_sizes.len() - 1]
-    // );
+    // TESTING MODELS
+    // ==================== MODEL TESTING CONSTANTS ==========================
+    const MODEL_V3: &str = "models/fn_model_v3/fn_model_v3_E9.bin";
+    const MODEL_V5: &str = "models/fn_model_v5/fn_model_v5_E20.bin";
+    const TESTS_FILE: &str = "datasets/tests.txt";
+    test_model(MODEL_V3, TESTS_FILE);
+    test_model(MODEL_V5, TESTS_FILE);
 
-    let layer_sizes: Vec<usize> = vec![128, 18];
-    let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, 46, LR);
-    train(&mut nn, "datasets.txt", EPOCHS);
-}
-
-fn train(nn: &mut NeuralNetwork, data_filename: &str, epochs: usize) {
-    for epoch in 0..epochs {
-        let mut loss = 0.0;
-        let mut count = 0;
-        let mut correct = 0;
-
-        for (idx, line) in read_to_string(data_filename).unwrap().lines().enumerate() {
-            // Break after a certain number of positions (do not load all of the data)
-            if idx + 1 == POS_LEN {
-                break;
-            }
-
-            let pos: Vec<i32> = line.split(" ").map(|u| u.parse().unwrap()).collect();
-            let p = &pos[0..=8];
-            let player = &pos[9];
-            let cv_pos = one_hot(p.to_vec(), *player as usize);
-
-            let d_star: usize = pos[10] as usize;
-            let a_star: usize = pos[11] as usize;
-
-            nn.back_prop(&cv_pos, d_star, a_star + 9);
-            let ((d, pd), (a, pa)) = nn.predict(&cv_pos);
-            let sample_loss: f64 = -pa.ln() - pd.ln();
-
-            // println!("Target: {:?} , Prediction: {:?}", (d_star, a_star), (d, a));
-            if d == d_star && a == a_star {
-                correct += 1;
-            }
-
-            // println!("Loss: {sample_loss}");
-            loss += sample_loss;
-            count += 1;
-        }
-
-        println!(
-            "Époque {}/{} terminée, perte moyenne: {} Correctes: {}, Précision: {}",
-            epoch + 1,
-            epochs,
-            loss / count as f64,
-            correct,
-            correct as f64 / POS_LEN as f64,
-        );
-
-        // Save parameters after each epoch
-        if let Err(e) =
-            save_parameters_binary(nn, format!("{MODEL_PARAMS_DIR}/FN_BOT_E{epoch}.bin"))
-        {
-            eprintln!(
-                "Erreur lors de la sauvegarde binaire à l'époque {}: {}",
-                epoch + 1,
-                e
-            );
-        }
-    }
+    // CREATING NEW MODELS
+    // let layer_sizes: Vec<usize> = vec![64, 64, 18];
+    // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
+    // train_model(&mut nn, TRAIN_DATA_FILE, EPOCHS);
 }
