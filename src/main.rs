@@ -18,20 +18,22 @@ fn main() {
     // const TESTS_FILE: &str = "datasets/tests.txt";
     // test_model(MODEL_V3, TESTS_FILE);
     // test_model(MODEL_V5, TESTS_FILE);
+    // =======================================================================
 
     // CREATING NEW MODELS
-
-    // ==================== TRAINING CONSTANTS ==============================
+    // ==================== TRAINING CONSTANTS ===============================
     const LEARNING_RATE: f64 = 0.1;
     const EPOCHS: usize = 20;
-    const TRAIN_DATA_FILE: &str = "datasets/trainings.txt";
-    const TRAIN_TEST_FILE: &str = "datasets/balanced_tests.txt";
+    const TRAIN_FILE: &str = "datasets/trainings.txt";
     // this is the directory where you model will be registered
-    const MODEL_PARAMS_DIR: &str = "models";
+
+    const MODELS_DIR: &str = "models"; // Directory where models will be saved
     //This is the identification of your model type
-    const MODEL_TYPE: &str = "fn_model_v5";
+    const MODEL_NAME: &str = "fn_model_v5"; // Each model will be saved for every epochs of the training
     const INPUT_SIZE: usize = 46;
+    // =======================================================================
+
     let layer_sizes: Vec<usize> = vec![64, 64, 18];
     let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
-    train_model(&mut nn, TRAIN_DATA_FILE, EPOCHS);
+    train_model(&mut nn, TRAIN_FILE, MODELS_DIR, MODEL_NAME, EPOCHS);
 }

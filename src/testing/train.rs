@@ -2,15 +2,21 @@ use rand::seq::SliceRandom;
 
 use crate::data::loads::*;
 use crate::nn::init::one_hot;
+use crate::nn::*;
 use crate::testing::predict::predict_moves;
-use crate::{MODEL_PARAMS_DIR, MODEL_TYPE, TRAIN_TEST_FILE, nn::*};
 
 #[allow(unused)]
-pub fn train_model(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
-    let mut training_pos: Vec<Vec<i32>> = load_positions(filename);
+pub fn train_model(
+    nn: &mut NeuralNetwork,
+    models_dir: &str,
+    train_filename: &str,
+    model_name: &str,
+    epochs: usize,
+) {
+    let mut training_pos: Vec<Vec<i32>> = load_positions(train_filename);
 
     // Creating the model directory if it does not exist
-    let model_dir = MODEL_PARAMS_DIR.to_owned() + "/" + MODEL_TYPE;
+    let model_dir = models_dir.to_owned() + "/" + model_name;
     match std::fs::create_dir_all(&model_dir) {
         Ok(()) => println!("Directory ensured to exist: {}", &model_dir),
         Err(e) => eprintln!("Failed to create directory: {}", e),
@@ -36,7 +42,7 @@ pub fn train_model(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
             nn.back_prop(&cv_pos, d_star, a_star + 9);
         }
 
-        let accuracy = predict_moves(nn, TRAIN_TEST_FILE);
+        let accuracy = predict_moves(nn, train_filename);
         println!(
             "Epoch {}/{epochs} finished! => {accuracy:.2}% accuracy",
             epoch + 1
@@ -47,10 +53,7 @@ pub fn train_model(nn: &mut NeuralNetwork, filename: &str, epochs: usize) {
             // Saving the model parameters after each epoch
             save_parameters_binary(
                 nn,
-                format!(
-                    "{MODEL_PARAMS_DIR}/{MODEL_TYPE}/{MODEL_TYPE}_E{}.bin",
-                    epoch + 1
-                ),
+                format!("{model_dir}/{model_name}_E{}.bin", epoch + 1),
             )
         {
             eprintln!("Error on saving parameters for epoch {}: {}", epoch + 1, e);
