@@ -27,9 +27,6 @@ pub fn train_model(
         // avoir the network to learn from the same positions
         // allow it to view various positions order
         training_pos.shuffle(&mut shuffler);
-        // println!("-----------");
-        // println!("{:.2?}", nn.weights[nn.ln - 1]);
-        // println!("-----------");
         for (_, pos) in training_pos.iter().enumerate() {
             let p = &pos[0..=8];
             let player = &pos[9];
