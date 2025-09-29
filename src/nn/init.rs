@@ -2,14 +2,14 @@ use crate::{
     data::loads::load_parameters_binary,
     maths::{collectors::mat::*, collectors::vec::*},
     nn::NeuralNetwork,
-    vecstruct,
+    vector,
 };
 
 // ==================== INITIALISATIONS OF COLLECTIONS =========================
 // Initialisations of Vectors
 pub fn init_vectors(ls: &Vec<usize>, rand_init: bool) -> Vec<Vector> {
     if !rand_init {
-        ls.iter().map(|&n| vecstruct![0.0;n]).collect()
+        ls.iter().map(|&n| vector![0.0;n]).collect()
     } else {
         ls.iter().map(|&n| Vector::init_rand(n)).collect()
     }

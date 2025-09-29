@@ -5,6 +5,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Vector(pub Vec<f64>);
 
+// ================ CONCATENATIONS ===============
+impl Vector {
+    pub fn extend(&mut self, v: Vector) {
+        self.0.extend(v.0);
+    }
+}
 // ================ INITIALISATION ===============
 impl Vector {
     pub fn len(&self) -> usize {
@@ -133,7 +139,7 @@ impl std::ops::Mul<&Vector> for f64 {
 
 // =================== CODE GOLFING =============================
 #[macro_export]
-macro_rules! vecstruct {
+macro_rules! vector {
      ($($x:expr),*) => {
         Vector(vec![$($x as f64),*])
     };

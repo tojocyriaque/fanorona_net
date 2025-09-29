@@ -5,6 +5,17 @@ use crate::nn::init::one_hot;
 use crate::nn::*;
 use crate::testing::predict::predict_moves;
 
+pub fn continue_train_model(
+    model: &str,      // the model to train
+    model_name: &str, // name of the new model
+    models_dir: &str,
+    train_filename: &str,
+    epochs: usize,
+) {
+    let mut nn = NeuralNetwork::from_file(model.to_string());
+    train_model(&mut nn, models_dir, train_filename, model_name, epochs);
+}
+
 #[allow(unused)]
 pub fn train_model(
     nn: &mut NeuralNetwork,
@@ -39,12 +50,11 @@ pub fn train_model(
             nn.back_prop(&cv_pos, d_star, a_star + 9);
         }
 
-        let accuracy = predict_moves(nn, train_filename);
+        let ((acc_a, acc_d, acc), loss) = predict_moves(nn, train_filename);
         println!(
-            "Epoch {}/{epochs} finished! => {accuracy:.2}% accuracy",
+            "Epoch: {}/{epochs} (accuracy: {acc:.4}%, accuracy_d: {acc_d:.4}%, accuracy_a: {acc_a:.4}%) (loss: {loss:.4})",
             epoch + 1
         );
-
         // Save parameters after each epoch
         if let Err(e) =
             // Saving the model parameters after each epoch

@@ -197,3 +197,14 @@ pub fn balance_dataset_uniform(
         }
     }
 }
+
+#[allow(unused)]
+pub fn shuffle_dataset(filename: &str) {
+    let mut positions = load_positions(filename);
+    let mut shuffler = rand::thread_rng();
+    positions.shuffle(&mut shuffler);
+
+    for pos in positions {
+        println!("{}", pos.into_iter().join(" "))
+    }
+}

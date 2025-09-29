@@ -14,17 +14,23 @@ impl Sigmoid for f64 {
     }
 }
 
-impl Sigmoid for Vector {
-    type Output = Self;
+impl Sigmoid for &Vec<f64> {
+    type Output = Vector;
     fn sigmoid(self) -> Self::Output {
-        let result = self.0.iter().map(|u| u.sigmoid()).collect();
-        Vector(result)
+        Vector(self.iter().map(|u| u.sigmoid()).collect())
     }
 }
 
 impl Sigmoid for &Vector {
     type Output = Vector;
     fn sigmoid(self) -> Self::Output {
-        self.clone().sigmoid()
+        self.0.sigmoid()
+    }
+}
+
+impl Sigmoid for &[f64] {
+    type Output = Vector;
+    fn sigmoid(self) -> Self::Output {
+        self.to_vec().sigmoid()
     }
 }

@@ -1,4 +1,4 @@
-use crate::vecstruct;
+use crate::vector;
 
 use super::vec::*;
 use rand::random;
@@ -19,7 +19,7 @@ impl Matrix {
     // m x n matrix
     #[allow(dead_code)]
     pub fn init_0(m: usize, n: usize) -> Self {
-        let result = vec![vecstruct![0.0;n]; m];
+        let result = vec![vector![0.0;n]; m];
         Matrix(result)
     }
 
