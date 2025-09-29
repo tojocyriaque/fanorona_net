@@ -41,21 +41,21 @@ fn main() {
     const MODEL_NAME: &str = "fn_model_d7_ng_v2"; // Each model will be saved for every epochs of the training
     const INPUT_SIZE: usize = 46;
     // // // =======================================================================
-    // let layer_sizes: Vec<usize> = vec![64, 18];
-    // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
-    // train_model(&mut nn, MODELS_DIR, TRAIN_FILE, MODEL_NAME, EPOCHS);
+    let layer_sizes: Vec<usize> = vec![64, 18];
+    let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
+    train_model(&mut nn, MODELS_DIR, TRAIN_FILE, MODEL_NAME, EPOCHS);
 
-    // // (if it is just an upgrade of a model you can continue it here by loading the model)
-    let existent_model = "models/fn_model_d7_ng_v4/fn_model_d7_ng_v4_E100.bin";
-    let new_model_name = "fn_model_d7_ng_v5";
+    // // (if it is just an upgrade of a model you can continue it down here by loading the model)
+    // let existent_model = "models/fn_model_d7_ng_v4/fn_model_d7_ng_v4_E100.bin";
+    // let new_model_name = "fn_model_d7_ng_v5";
 
-    continue_train_model(
-        existent_model,
-        new_model_name,
-        MODELS_DIR,
-        TRAIN_FILE,
-        EPOCHS,
-    );
+    // continue_train_model(
+    //     existent_model,
+    //     new_model_name,
+    //     MODELS_DIR,
+    //     TRAIN_FILE,
+    //     EPOCHS,
+    // );
 
     // =================================== DATASET GENERATION (with a depth as parameter)
     // redirect it into a file

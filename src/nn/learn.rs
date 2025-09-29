@@ -20,12 +20,14 @@ impl NeuralNetwork {
 
         // println!("x:{:?}; w:{:?}", x.len(), self.weights[0].dim());
         z.push(&(&x * &self.weights[0]) + &self.biases[0]);
-        a.push(z[0].relu());
+        // a.push(z[0].relu()); // if using relu
+        a.push(z[0].sigmoid()); // if using sigmoid
 
         for i in 1..self.ln {
             z.push(&(&a[i - 1] * &self.weights[i]) + &self.biases[i]);
             if i < self.ln - 1 {
-                a.push(z[i].relu());
+                // a.push(z[i].relu());
+                a.push(z[i].sigmoid());
             }
         }
 
@@ -37,6 +39,7 @@ impl NeuralNetwork {
     }
 
     pub fn back_prop(&mut self, x: &Vector, d_star: usize, a_star: usize) {
+        #[allow(unused)]
         let (z, a) = self.feed_forward(x.clone());
 
         // Partial derivatives
@@ -75,8 +78,8 @@ impl NeuralNetwork {
                         da_i += dz[k][j] * self.weights[k][j][i];
                     }
 
-                    // dz[k - 1][i] = da_i * a[k - 1][i] * (1.0 - a[k - 1][i]) // (sigmoid)
-                    dz[k - 1][i] = da_i * (if z[k - 1][i] > 0.0 { 1.0 } else { 0.0 }); // (relu)
+                    dz[k - 1][i] = da_i * a[k - 1][i] * (1.0 - a[k - 1][i]) // (sigmoid back prop)
+                    // dz[k - 1][i] = da_i * (if z[k - 1][i] > 0.0 { 1.0 } else { 0.0 }); // (relu back prop)
                 }
             }
         }
