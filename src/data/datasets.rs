@@ -28,7 +28,8 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
 }
 
 #[allow(dead_code, unused)]
-pub fn generate_dataset(depth: usize) {
+pub fn generate_dataset(depth: usize, output_filename: &str) {
+    let mut output_file = File::create(output_filename).unwrap();
     // Étape 1 : Generate positon for 3 zeros, 3 positive, 3 negative
     let positions: Vec<usize> = (0..9).collect();
     for zero_pos in positions.into_iter().combinations(3) {
@@ -77,23 +78,27 @@ pub fn generate_dataset(depth: usize) {
                     // valid if player one is the current player
                     if v1 {
                         minimax(&combination, depth, 1, &mut b_mv, true);
-                        println!(
+                        let line = format!(
                             "{} 1 {} {}",
                             combination.clone().into_iter().join(" "),
                             b_mv.0,
                             b_mv.1
                         );
+                        writeln!(output_file, "{}", line).unwrap();
+                        println!("{}", line);
                     }
 
                     // valid if the player 2 is the current player
                     if v2 {
                         minimax(&combination, depth, -1, &mut b_mv, true);
-                        println!(
+                        let line = format!(
                             "{} 2 {} {}",
                             combination.into_iter().join(" "),
                             b_mv.0,
                             b_mv.1
                         );
+                        writeln!(output_file, "{}", line).unwrap();
+                        println!("{}", line);                        
                     }
                 }
             }
