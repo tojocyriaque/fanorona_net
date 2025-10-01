@@ -7,8 +7,9 @@ pub fn evaluate_board(b: &FanoronaBoard) -> i32 {
     if winner != 0 {
         return 10 * winner;
     }
-
-    b.iter().sum()
+    let material_score: i32 = b.iter().sum(); 
+    let mobility_score = possible(b, 1).len() as i32 - possible(b, -1).len() as i32; 
+    material_score * 10 + mobility_score
 }
 
 // Minimax algorithm to find best move

@@ -1,5 +1,6 @@
 use crate::maths::collectors::vec::Vector;
 
+#[allow(unused)]
 // ==================== IMPLEMENTATIONS FOR SIGMOID =================================
 pub trait ReLU {
     type Output;

@@ -4,10 +4,12 @@ use itertools::*;
 use rand::{seq::SliceRandom, thread_rng};
 use std::{
     collections::HashMap,
-    fs::File,
+    path::Path,
+    fs::{File, create_dir_all},
     io::{BufRead, BufReader, Write},
     usize,
 };
+
 // data loading
 use crate::games::fanorona::*;
 use crate::{data::loads::load_positions, games::minmax::*}; // game implementations
@@ -201,6 +203,54 @@ pub fn balance_dataset_uniform(
             writeln!(output_file, "{}", line).unwrap();
         }
     }
+}
+
+#[allow(unused)]
+pub fn split_dataset(
+    input_filename: &str,
+    output_dir: &str,
+    train_ratio: f64,
+    val_ratio: f64,
+) {
+    // Read the input file
+    let file = File::open(input_filename).expect("Cannot open input file");
+    let reader = BufReader::new(file);
+    let mut lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+
+    // Shuffle the lines randomly
+    let mut rng = thread_rng();
+    lines.shuffle(&mut rng);
+
+    // Compute the number of lines for each split
+    let total = lines.len();
+    let train_count = (total as f64 * train_ratio).round() as usize;
+    let val_count = (total as f64 * val_ratio).round() as usize;
+    let test_count = total - train_count - val_count;
+
+    // Create the output directory if it does not exist
+    create_dir_all(output_dir).expect("Cannot create output directory");
+
+    // Build paths for the output files
+    let train_path = Path::new(output_dir).join("training.txt");
+    let val_path = Path::new(output_dir).join("validation.txt");
+    let test_path = Path::new(output_dir).join("test.txt");
+
+    // Write the datasets to their respective files
+    for (path, slice) in [
+        (train_path, &lines[0..train_count]),
+        (val_path, &lines[train_count..train_count + val_count]),
+        (test_path, &lines[train_count + val_count..]),
+    ] {
+        let mut f = File::create(path).expect("Cannot create output file");
+        for line in slice {
+            writeln!(f, "{}", line).unwrap();
+        }
+    }
+
+    println!(
+        "Dataset split: {} train, {} validation, {} test",
+        train_count, val_count, test_count
+    );
 }
 
 #[allow(unused)]
