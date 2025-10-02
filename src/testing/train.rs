@@ -47,7 +47,8 @@ pub fn train_model_with_batch(
     }
 
     let mut shuffler = rand::thread_rng();
-    let in_lr = nn.lr;
+    // let in_lr = nn.lr;
+    let in_lr = 0.001;
     for epoch in 0..epochs {
         training_pos.shuffle(&mut shuffler);
         nn.lr = in_lr * 0.5_f64.powf(epoch as f64 / step_size as f64);
