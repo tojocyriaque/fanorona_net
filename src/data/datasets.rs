@@ -236,16 +236,25 @@ pub fn split_dataset(
     let test_path = Path::new(output_dir).join("test.txt");
 
     // Write the datasets to their respective files
-    for (path, slice) in [
-        (train_path, &lines[0..train_count]),
-        (val_path, &lines[train_count..train_count + val_count]),
-        (test_path, &lines[train_count + val_count..]),
-    ] {
+    // for (path, slice) in [
+    //     (train_path, &lines[0..train_count]),
+    //     (val_path, &lines[train_count..train_count + val_count]),
+    //     (test_path, &lines[train_count + val_count..]),
+    // ] {
+    //     let mut f = File::create(path).expect("Cannot create output file");
+    //     for line in slice {
+    //         writeln!(f, "{}", line).unwrap();
+    //     }
+    // }
+
+    // Copy all into those 3 files
+    for path in [train_path, val_path, test_path] {
         let mut f = File::create(path).expect("Cannot create output file");
-        for line in slice {
+        for line in &lines {
             writeln!(f, "{}", line).unwrap();
         }
     }
+
 
     println!(
         "Dataset split: {} train, {} validation, {} test",
