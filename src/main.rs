@@ -53,21 +53,12 @@ fn main() {
     // // =======================================================================
     let layer_sizes: Vec<usize> = vec![64, 18];
     let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
-    // train_model(&mut nn, MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS);
     train_model_with_batch(&mut nn, MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
 
     // // (if it is just an upgrade of a model you can continue it down here by loading the model)
     // let existent_model = "models/fn_model_d9_ng_v3/fn_model_d9_ng_v3_E100.bin";
     // let new_model_name = "fn_model_d9_ng_v4";
 
-    // continue_train_model(
-    //     existent_model,
-    //     new_model_name,
-    //     MODELS_DIR,
-    //     TRAIN_FILE,
-    //     VAL_FILE,
-    //     EPOCHS,
-    // );
     // continue_train_model_with_batch(
     //     existent_model,
     //     new_model_name,
