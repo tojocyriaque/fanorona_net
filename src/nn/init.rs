@@ -44,7 +44,7 @@ pub fn one_hot(pos: Vec<i32>, c_pl: usize) -> Vector {
         })
         .collect::<Vec<f64>>();
 
-    v.push([0., 1.][c_pl - 1]);
+    v.push([0., 1.][c_pl - 1]); // 1 ou 2
     Vector(v)
 }
 

@@ -13,9 +13,6 @@ use crate::games::fanorona::*;
 use crate::{data::loads::load_positions, games::minmax::*}; // game implementations
 
 #[allow(dead_code, unused)]
-const DEPTH: usize = 5;
-
-#[allow(dead_code, unused)]
 pub fn neighbours() -> HashMap<usize, Vec<usize>> {
     HashMap::from([
         (0, vec![1, 3, 4]),
@@ -31,38 +28,38 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
 }
 
 #[allow(dead_code, unused)]
-pub fn generate_combinations() {
-    // Étape 1 : Générer les positions pour 3 zéros, 3 positifs, 3 négatifs
+pub fn generate_dataset(depth: usize) {
+    // Étape 1 : Generate positon for 3 zeros, 3 positive, 3 negative
     let positions: Vec<usize> = (0..9).collect();
     for zero_pos in positions.into_iter().combinations(3) {
-        // zero_pos est maintenant Vec<usize>
+        // zero_pos is now  Vec<usize>
         let remaining: Vec<usize> = (0..9).filter(|&p| !zero_pos.contains(&p)).collect();
 
         for pos_pos in remaining.clone().into_iter().combinations(3) {
-            // pos_pos est Vec<usize>
+            // pos_pos is Vec<usize>
             let neg_pos: Vec<usize> = remaining
                 .iter()
                 .filter(|&&p| !pos_pos.contains(&p))
                 .copied()
                 .collect();
 
-            // Étape 2 : Générer les valeurs pour les positifs (1 ou 2)
+            // Step 2 : Generate values for the positive player (1 ou 2)
             let pos_iter = (0..3).map(|_| vec![1i32, 2]);
             for pos_vals in pos_iter.multi_cartesian_product() {
-                // Étape 3 : Générer les valeurs pour les négatifs (-1 ou -2)
+                // Step 3 : Generate values for the negative player (-1 ou -2)
                 let neg_iter = (0..3).map(|_| vec![-1i32, -2]);
                 for neg_vals in neg_iter.multi_cartesian_product() {
-                    // Créer la séquence de 9 chiffres
+                    // Create the sequence of 9 numbers
                     let mut combination = vec![0i32; 9];
-                    // Placer les zéros
+                    // Place the zeros
                     for &pos in &zero_pos {
                         combination[pos] = 0;
                     }
-                    // Placer les positifs
+                    // Place the positive
                     for (&pos, &val) in pos_pos.iter().zip(pos_vals.iter()) {
                         combination[pos] = val;
                     }
-                    // Placer les négatifs
+                    // Place the negative
                     for (&pos, &val) in neg_pos.iter().zip(neg_vals.iter()) {
                         combination[pos] = val;
                     }
@@ -72,12 +69,14 @@ pub fn generate_combinations() {
                         continue;
                     }
 
+                    // check if the position is valid for each player
                     let v1 = valid_pos(combination.to_vec(), 1);
                     let v2 = valid_pos(combination.to_vec(), -1);
                     let mut b_mv: GMove = (0, 0);
 
+                    // valid if player one is the current player
                     if v1 {
-                        minimax(&combination, DEPTH, 1, &mut b_mv, true);
+                        minimax(&combination, depth, 1, &mut b_mv, true);
                         println!(
                             "{} 1 {} {}",
                             combination.clone().into_iter().join(" "),
@@ -85,8 +84,10 @@ pub fn generate_combinations() {
                             b_mv.1
                         );
                     }
+
+                    // valid if the player 2 is the current player
                     if v2 {
-                        minimax(&combination, DEPTH, -1, &mut b_mv, true);
+                        minimax(&combination, depth, -1, &mut b_mv, true);
                         println!(
                             "{} 2 {} {}",
                             combination.into_iter().join(" "),
@@ -190,7 +191,7 @@ pub fn balance_dataset_uniform(
     // Écrire le dataset équilibré
     let mut output_file = File::create(output_filename).unwrap();
     for (_, bucket) in buckets.iter().enumerate() {
-        let take = bucket.len().min(target_per_class); // ← Limite each paire
+        let take = bucket.len().min(target_per_class); // ← Limite each pair
         for line in bucket.iter().take(take) {
             writeln!(output_file, "{}", line).unwrap();
         }

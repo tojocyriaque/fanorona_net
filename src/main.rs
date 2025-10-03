@@ -1,5 +1,7 @@
+use crate::data::datasets::generate_dataset;
 #[allow(unused)]
 use crate::{
+    games::fanorona::*,
     nn::NeuralNetwork,
     testing::{predict::test_model, train::train_model},
 };
@@ -13,7 +15,7 @@ mod testing;
 fn main() {
     // TESTING MODELS
     // ==================== MODEL TESTING CONSTANTS ==========================
-    // const TESTS_FILE: &str = "datasets/balanced_tests.txt";
+    // const TESTS_FILE: &str = "datasets/tests.txt";
     // test_model("models/fn_model_v5/fn_model_v5_E20.bin", TESTS_FILE);
     // test_model("models/fn_model_v6/fn_model_v6_E20.bin", TESTS_FILE);
     // =======================================================================
@@ -30,8 +32,16 @@ fn main() {
     // const MODEL_NAME: &str = "fn_model_v6"; // Each model will be saved for every epochs of the training
     // const INPUT_SIZE: usize = 46;
     // // =======================================================================
-
     // let layer_sizes: Vec<usize> = vec![64, 64, 18];
     // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
     // train_model(&mut nn, MODELS_DIR, TRAIN_FILE, MODEL_NAME, EPOCHS);
+
+    // =================================== DATASET GENERATION (with a depth as parameter)
+    // redirect it into a file
+    generate_dataset(7);
+
+    // =================================== PLAYING IN CONSOLE (for model testing maybe)
+    // let mut i_board = vec![0, 0, 1, 1, 1, -1, -1, 0, -1];
+    // let model = "models/fn_model_v5/fn_model_v5_E20.bin";
+    // play_fanorona(&mut i_board, model);
 }
