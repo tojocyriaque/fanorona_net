@@ -1,0 +1,915 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,decorations.pathreplacing,calc}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems,skins}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Configuration géométrique et typographique
+\geometry{margin=2.5cm}
+\numberwithin{equation}{section}
+
+% Couleurs personnalisées
+\definecolor{primaryblue}{RGB}{30,75,140}
+\definecolor{secondarygreen}{RGB}{34,139,34}
+\definecolor{accentorange}{RGB}{255,140,0}
+\definecolor{lightgray}{RGB}{245,245,245}
+
+% Mise en forme générale améliorée
+\raggedbottom
+\linespread{1.1}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0pt}
+
+% Configuration des titres avec couleurs
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primaryblue}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge\color{primaryblue}}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primaryblue}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{secondarygreen}}
+  {\thesubsection}{1em}{}
+
+% Espacement des titres
+\titlespacing*{\chapter}{0pt}{20pt}{15pt}
+\titlespacing*{\section}{0pt}{15pt}{8pt}
+\titlespacing*{\subsection}{0pt}{10pt}{6pt}
+
+% En-têtes et pieds stylisés
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{primaryblue}\textsc{R. N. - Fanorona 3×3}}
+\fancyhead[R]{\color{primaryblue}\nouppercase{\leftmark}}
+\fancyfoot[C]{\color{primaryblue}\thepage}
+\renewcommand{\headrulewidth}{0.8pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{primaryblue}\leaders\hrule height \headrulewidth\hfill}}
+
+% Configuration des liens
+\hypersetup{
+  colorlinks=true,
+  linkcolor=primaryblue,
+  citecolor=secondarygreen,
+  urlcolor=accentorange,
+  pdftitle={Réseau de neurones pour le Fanorona 3×3},
+  pdfauthor={Cyriaque, Tsanta, Aro, Peniala}
+}
+
+% Boîtes théorèmes colorées
+\newtcolorbox{definition}[1][]{
+  colback=lightgray,
+  colframe=primaryblue,
+  coltitle=white,
+  colbacktitle=primaryblue,
+  boxrule=1pt,
+  arc=3pt,
+  fonttitle=\bfseries,
+  title={#1}
+}
+
+\newtcolorbox{theorem}[1][]{
+  colback=blue!5,
+  colframe=primaryblue,
+  coltitle=white,
+  colbacktitle=primaryblue,
+  boxrule=1pt,
+  arc=3pt,
+  fonttitle=\bfseries,
+  title={#1}
+}
+
+\newtcolorbox{remark}{
+  colback=green!5,
+  colframe=secondarygreen,
+  boxrule=1pt,
+  arc=3pt,
+  fonttitle=\bfseries\color{secondarygreen},
+  title=Remarque
+}
+
+\newtcolorbox{important}{
+  colback=orange!10,
+  colframe=accentorange,
+  boxrule=2pt,
+  arc=3pt,
+  fonttitle=\bfseries\color{accentorange},
+  title=Important
+}
+
+% Titre amélioré
+\title{
+  \vspace{-2cm}
+  {\color{primaryblue}\Huge\textbf{Réseau de neurones pour le Fanorona 3×3}}\\
+  \vspace{0.5cm}
+  {\color{secondarygreen}\Large Fondements mathématiques et implémentation avancée}\\
+  \vspace{0.3cm}
+  {\color{accentorange}\large Une approche généralisée de l'apprentissage automatique appliqué aux jeux traditionnels}\\
+  \vspace{1.0cm}
+  {\color{primaryblue}\large MIT - L3}
+}
+\author{
+  \vspace{0.3cm}
+  {\color{primaryblue}\textbf{RAMAROSON Tojotiana Cyriaque}} \and 
+  \vspace{0.3cm}
+  {\color{primaryblue}\textbf{RANDRIANARISOA Tsantamirindra}} \and 
+  \vspace{0.3cm} 
+  {\color{primaryblue}\textbf{RAKOTOARIJAONA Aro Mino Avotra}} \and
+  \vspace{0.3cm} 
+  {\color{primaryblue}\textbf{RANAIVO Ny Aina Peniala}}
+}
+% \date{\color{secondarygreen}\today}
+\date{}
+
+\begin{document}
+\pagenumbering{roman}
+\maketitle
+
+\begin{abstract}
+\color{black}
+Ce document présente une analyse de l'architecture, de l'implémentation et des fondements mathématiques d'un réseau de neurones artificiels développé spécifiquement pour le jeu traditionnel malgache \emph{Fanorona} sur plateau 3×3. L'étude couvre les aspects théoriques profonds incluant l'encodage vectoriel des états de jeu, la formulation des algorithmes de propagation avant et arrière, les justifications mathématiques des choix d'activation (sigmoid, softmax), d'initialisation (Xavier), et de fonction de perte (entropie croisée). Le rapport détaille également la génération synthétique des données d'entraînement et présente l'implémentation modulaire en Rust. L'architecture générique permet une configuration flexible des couches, utilisant la fonction sigmoïde pour les couches cachées et un système de double softmax (9+9 neurones) pour la couche de sortie, adapté à la structure décisionnelle du jeu.
+\end{abstract}
+
+\clearpage
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\chapter{Introduction et contexte}
+
+\section{Objectifs et motivation}
+Le développement de systèmes d'intelligence artificielle capables de maîtriser des jeux complexes constitue un domaine de recherche fondamental en apprentissage automatique. Ce projet vise à concevoir, analyser théoriquement et implémenter un réseau de neurones capable d'imiter des stratégies optimales pour le jeu Fanorona sur un plateau réduit de dimensions 3×3.
+
+\begin{important}
+L'approche adoptée privilégie une double perspective : d'une part, l'exposition rigoureuse des fondements mathématiques sous-jacents au modèle et aux algorithmes d'apprentissage ; d'autre part, la traduction pratique de ces formulations théoriques dans une implémentation performante en Rust.
+\end{important}
+
+\section{Architecture générique et spécialisations}
+Le modèle développé présente une architecture générique paramétrable par une liste de tailles de couches, offrant ainsi une flexibilité maximale pour l'expérimentation. Dans l'usage pratique du projet :
+\begin{itemize}
+  \item \textbf{Couches cachées} : activation par fonction sigmoïde $\sigma(z) = \frac{1}{1+e^{-z}}$
+  \item \textbf{Couche de sortie} : production de logits suivie de l'application de deux softmax séparés
+  \item \textbf{Factorisation} : décomposition en deux têtes de prédiction (départ/arrivée) de 9 neurones chacune
+\end{itemize}
+
+Cette factorisation permet une adaptation naturelle à la problématique de sélection d'un coup $(d,a)$ où $d$ représente la case de départ et $a$ la case d'arrivée.
+
+\chapter{Modélisation mathématique du jeu}
+
+\section{Formalisation de l'espace d'états}
+
+\subsection{Représentation discrète du plateau}
+Soit $\mathcal{P} = \{0, 1, 2, \ldots, 8\}$ l'ensemble des positions sur le plateau 3×3. Chaque case $i \in \mathcal{P}$ est caractérisée par un état $s_i$ appartenant à l'ensemble discret :
+
+\begin{definition}
+L'espace d'états par case est défini comme :
+$$\mathcal{S} = \{-2, -1, 0, 1, 2\}$$
+où :
+\begin{align}
+s_i = -2 &\iff \text{pion du joueur A déjà déplacé en position } i\\
+s_i = -1 &\iff \text{pion du joueur A (non déplacé) en position } i\\
+s_i = 0 &\iff \text{case } i \text{ vide}\\
+s_i = 1 &\iff \text{pion du joueur B en position } i\\
+s_i = 2 &\iff \text{pion du joueur B déjà déplacé en position } i
+\end{align}
+\end{definition}
+
+L'état global du plateau est représenté par le vecteur $\mathbf{s} = (s_0, s_1, \ldots, s_8) \in \mathcal{S}^9$.
+
+\subsection{Formalisation de l'objectif d'apprentissage}
+\begin{theorem}[Problème de prédiction optimale]
+Soit $\mathcal{X} = \mathcal{S}^9 \times \{-1, 1\}$ l'espace des configurations (état du plateau × joueur courant).
+L'objectif du réseau de neurones est d'apprendre la fonction :
+$$f^* : \mathcal{X} \rightarrow \mathcal{P} \times \mathcal{P}$$
+qui associe à chaque configuration $(s, p)$ le coup optimal $(d^*, a^*)$ selon une politique experte (ex: Minimax).
+\end{theorem}
+
+\section{Encodage vectoriel et plongement}
+
+\subsection{Transformation one-hot}
+L'encodage one-hot constitue une injection de l'espace discret $\mathcal{S}$ vers un sous-espace de $\mathbb{R}^5$ :
+
+\begin{definition}[Fonction d'encodage one-hot]
+$$\phi : \mathcal{S} \rightarrow \{0,1\}^5$$
+définie par :
+$$\phi(s) = \begin{cases}
+[1,0,0,0,0]^T & \text{si } s = -2\\
+[0,1,0,0,0]^T & \text{si } s = -1\\
+[0,0,1,0,0]^T & \text{si } s = 0\\
+[0,0,0,1,0]^T & \text{si } s = 1\\
+[0,0,0,0,1]^T & \text{si } s = 2
+\end{cases}$$
+\end{definition}
+
+\begin{theorem}[Propriétés de l'encodage one-hot]
+L'encodage one-hot $\phi$ satisfait les propriétés suivantes :
+\begin{enumerate}
+  \item \textbf{Injectivité} : $\phi$ est une injection, i.e., $\phi(s_1) = \phi(s_2) \Rightarrow s_1 = s_2$
+  \item \textbf{Orthogonalité} : $\forall s_1 \neq s_2, \langle \phi(s_1), \phi(s_2) \rangle = 0$
+  \item \textbf{Normalisation} : $\forall s \in \mathcal{S}, \|\phi(s)\|_2 = 1$
+\end{enumerate}
+\end{theorem}
+
+\subsection{Construction du vecteur d'entrée}
+Le vecteur d'entrée du réseau est construit par concaténation :
+
+$$\mathbf{x} = \begin{bmatrix}
+\phi(s_0)\\
+\phi(s_1)\\
+\vdots\\
+\phi(s_8)\\
+p
+\end{bmatrix} \in \mathbb{R}^{46}$$
+
+où $p \in \{-1, 1\}$ identifie le joueur courant.
+
+\begin{remark}
+Cette représentation évite l'introduction d'un ordre numérique arbitraire entre les différents états de cases, préservant ainsi la structure catégorielle naturelle du problème.
+\end{remark}
+
+\section{Génération synthétique des données}
+
+\begin{important}
+Étant donné l'absence de datasets publics pour le Fanorona 3×3, l'ensemble d'entraînement a été synthétisé algorithmiquement. Les étiquettes $(d^*, a^*)$ sont générées par un oracle externe (algorithme Minimax, heuristique experte) appliqué aux configurations de jeu.
+\end{important}
+
+Cette approche de génération automatique présente l'avantage de produire un dataset équilibré et exhaustif, couvrant une large gamme de configurations possibles.
+
+\chapter{Architecture du réseau neuronal}
+
+\section{Formalisme mathématique général}
+
+\subsection{Notations et conventions}
+Soit $L \in \mathbb{N}^*$ le nombre total de couches (incluant la couche de sortie). Pour chaque couche $k \in \{1, 2, \ldots, L\}$ :
+
+\begin{itemize}
+  \item $W^{(k)} \in \mathbb{R}^{m_k \times n_k}$ : matrice des poids de connexion
+  \item $\mathbf{b}^{(k)} \in \mathbb{R}^{m_k}$ : vecteur de biais
+  \item $\mathbf{z}^{(k)} \in \mathbb{R}^{m_k}$ : entrée nette (avant activation)
+  \item $\mathbf{a}^{(k)} \in \mathbb{R}^{m_k}$ : sortie activée
+  \item $m_k$ : nombre de neurones dans la couche $k$
+  \item $n_k$ : dimension de l'entrée de la couche $k$
+\end{itemize}
+
+avec la convention $\mathbf{a}^{(0)} = \mathbf{x}$ (vecteur d'entrée du réseau).
+
+\subsection{Illustration architecturale améliorée}
+
+\begin{center}
+\begin{tikzpicture}[
+    scale=1,
+    neuron/.style={circle, draw=primaryblue!80, fill=blue!15, minimum size=4mm, inner sep=0pt, thick},
+    input/.style={circle, draw=secondarygreen!80, fill=green!15, minimum size=4mm, inner sep=0pt, thick},
+    output/.style={circle, draw=accentorange!80, fill=orange!15, minimum size=4mm, inner sep=0pt, thick},
+    connection/.style={->, very thin, gray!50},
+    thickconnection/.style={->, thick, gray!70},
+    >=stealth
+]
+
+% Couche d'entrée (46 neurones) - représentation simplifiée
+\foreach \y [count=\n] in {2, 1.5, 1} {
+    \node[input] (I\n) at (0, \y) {};
+}
+\node[font=\small] at (0, 0.3) {\color{secondarygreen}$\vdots$};
+
+\foreach \y [count=\m from 4] in {-0.5, -1, -1.5} {
+    \node[input] (I\m) at (0, \y) {};
+}
+
+% Label pour l'entrée
+\node[below=15mm of I6, align=center, color=secondarygreen, font=\footnotesize\bfseries] {
+    \textbf{Entrée}\\
+    46 neurones\\
+    $\mathbf{x} \in \mathbb{R}^{46}$
+};
+
+% 1ère couche cachée (générique)
+\foreach \y [count=\n] in {2, 1.5, 1} {
+    \node[neuron] (H1\n) at (2.5, \y) {};
+}
+
+\node[font=\small] at (2.5, 0.3) {\color{primaryblue}$\vdots$};
+
+\foreach \y [count=\m from 4] in {-0.5, -1, -1.5} {
+    \node[neuron] (H1\m) at (2.5, \y) {};
+}
+
+% Label pour couche 1
+\node[below=15mm of H16, align=center, color=primaryblue, font=\footnotesize\bfseries] {
+    \textbf{Couche 1}\\
+    $m_1$ neurones\\
+    $\sigma$
+};
+
+% 2ème couche cachée (générique)
+\foreach \y [count=\n] in {2, 1.5, 1} {
+    \node[neuron] (H2\n) at (5, \y) {};
+}
+
+\node[font=\small] at (5, 0.3) {\color{primaryblue}$\vdots$};
+
+\foreach \y [count=\m from 4] in {-0.5, -1, -1.5} {
+    \node[neuron] (H2\m) at (5, \y) {};
+}
+
+% Label pour couche 2
+\node[below=15mm of H26, align=center, color=primaryblue, font=\footnotesize\bfseries] {
+    \textbf{Couche 2}\\
+    $m_2$ neurones\\
+    $\sigma$
+};
+
+% Points de suspension pour couches intermédiaires
+\node[font=\Large, color=primaryblue] at (6.5, 0) {$\cdots$};
+
+\node[below=2mm, color=primaryblue, font=\scriptsize, align=center] at (6.5, 0) {
+    Couches\\$3, \ldots, L-1$
+};
+
+% Dernière couche cachée
+\foreach \y [count = \n] in {2, 1.5, 1} {
+    \node[neuron] (HL\n) at (8, \y) {};
+}
+
+\node[font=\small] at (8, 0.3) {\color{primaryblue}$\vdots$};
+
+\foreach \y [count = \m from 4] in {-0.5, -1, -1.5} {
+    \node[neuron] (HL\m) at (8, \y) {};
+}
+
+% Label pour dernière couche cachée
+\node[below=15mm of HL6, align=center, color=primaryblue, font=\footnotesize\bfseries] {
+    \textbf{Couche $L-1$}\\
+    $m_{L-1}$ neurones\\
+    $\sigma$
+};
+
+% Couche de sortie - logits (18 neurones)
+\foreach \y [count = \n] in {3, 2.5, 2} {
+    \node[output] (OL\n) at (11, \y) {};
+}
+\node[font=\small] at (11, 1.5) {\color{accentorange}$\vdots$};
+
+\foreach \y [count = \m from 4] in {0.8, 0.3} {
+    \node[output] (OL\m) at (11, \y) {};
+}
+\node[font=\small] at (11, -0.2) {\color{accentorange}$\vdots$};
+
+\foreach \y [count = \o from 6] in {-0.8, -1.3, -1.8} {
+    \node[output] (OL\o) at (11, \y) {};
+}
+% Label pour couche logits
+\node[below=12mm of OL8, align=center, color=accentorange, font=\footnotesize\bfseries] {
+    \textbf{Logits}\\
+    18 neurones\\
+    $\mathbf{z}^{(L)}$
+};
+
+% Labels pour softmax
+\node[right=5mm of OL3, align=center, color=accentorange, font=\footnotesize\bfseries] {
+    \textbf{Départ}\\
+    9 neurones\\
+    $\mathbf{p}_d$
+};
+
+\node[right=5mm of OL6, align=center, color=accentorange, font=\footnotesize\bfseries] {
+    \textbf{Arrivée}\\
+    9 neurones\\
+    $\mathbf{p}_a$
+};
+
+% Connexions entre couches (échantillon représentatif)
+% Entrée vers couche 1
+\foreach \i in {1,...,6} {
+    \foreach \j in {1,...,6} {
+        \draw[connection, very thin] (I\i) -- (H1\j);
+    }
+}
+
+\foreach \i in {1,...,6} {
+    \foreach \j in {1,...,6} {
+        \draw[connection, thin] (H1\i) -- (H2\j);
+    }
+}
+
+\foreach \i in {1,...,6} {
+    \foreach \j in {1,...,8} {
+        \draw[connection, very thin, orange!30] (HL\i) -- (OL\j);
+    }
+}
+
+% Annotations avec accolades
+\draw[decoration={brace, amplitude=4pt, mirror}, decorate, thick, secondarygreen] 
+    (-0.7, 2.2) -- (-0.7, -1.8);
+
+\node[left=3pt, color=secondarygreen, font=\scriptsize, align=center] at (-1, 0.2) {
+    Encodage\\one-hot\\du plateau\\+ joueur
+};
+
+\draw[decoration={brace, amplitude=5pt}, decorate, thick, accentorange] 
+    (11.5, 3.2) -- (11.5, 0.6);
+
+\draw[decoration={brace, amplitude=5pt}, decorate, thick, accentorange] 
+    (11.5, 0.4) -- (11.5, -2);
+
+\node[right=8pt, color=accentorange, font=\scriptsize, align=center] at (20.5, -0.5) {
+    Probabilités\\de choix\\$(d, a)$
+};
+
+\end{tikzpicture}
+\end{center}
+
+\subsection{Propagation avant : formulation mathématique}
+
+\begin{theorem}[Algorithme de propagation avant]
+Pour chaque couche $k \in \{1, 2, \ldots, L\}$, le calcul de propagation avant s'effectue selon :
+\begin{align}
+\mathbf{z}^{(k)} &= W^{(k)} \mathbf{a}^{(k-1)} + \mathbf{b}^{(k)} \label{eq:linear_transform}\\
+\mathbf{a}^{(k)} &= \phi^{(k)}(\mathbf{z}^{(k)}) \label{eq:activation_function}
+\end{align}
+où $\phi^{(k)}$ désigne la fonction d'activation de la couche $k$.
+\end{theorem}
+
+\section{Fonctions d'activation et leurs propriétés}
+
+\subsection{Fonction sigmoïde pour les couches cachées}
+
+\begin{definition}[Fonction sigmoïde]
+La fonction sigmoïde est définie par :
+$$\sigma(z) = \frac{1}{1 + e^{-z}}$$
+avec pour dérivée :
+$$\sigma'(z) = \sigma(z)(1 - \sigma(z))$$
+\end{definition}
+
+\begin{theorem}[Propriétés de la sigmoïde]
+La fonction sigmoïde satisfait :
+\begin{enumerate}
+  \item \textbf{Monotonie stricte} : $\sigma$ est strictement croissante sur $\mathbb{R}$
+  \item \textbf{Bornes} : $\lim_{z \to -\infty} \sigma(z) = 0$ et $\lim_{z \to +\infty} \sigma(z) = 1$
+  \item \textbf{Point d'inflexion} : $\sigma(0) = \frac{1}{2}$
+  \item \textbf{Symétrie} : $\sigma(-z) = 1 - \sigma(z)$
+\end{enumerate}
+\end{theorem}
+
+\subsection{Double softmax pour la couche de sortie}
+
+Pour la couche de sortie $(k = L)$, les logits $\mathbf{z}^{(L)} \in \mathbb{R}^{18}$ sont partitionnés et traités par deux fonctions softmax séparées :
+
+\begin{align}
+\mathbf{p}_d &= \text{softmax}(\mathbf{z}^{(L)}_{0:8}) = \left[\frac{e^{z^{(L)}_i}}{\sum_{j=0}^{8} e^{z^{(L)}_j}}\right]_{i=0}^{8}\\
+\mathbf{p}_a &= \text{softmax}(\mathbf{z}^{(L)}_{9:17}) = \left[\frac{e^{z^{(L)}_i}}{\sum_{j=9}^{17} e^{z^{(L)}_j}}\right]_{i=9}^{17}
+\end{align}
+
+La sortie finale est : $\mathbf{a}^{(L)} = [\mathbf{p}_d, \mathbf{p}_a] \in \mathbb{R}^{18}$
+
+\chapter{Fonction de perte et optimisation}
+
+\section{Construction de l'étiquette cible}
+
+\begin{definition}[Vecteur d'étiquetage]
+Pour un exemple d'entraînement avec étiquette $(d^*, a^*) \in \mathcal{P} \times \mathcal{P}$, le vecteur cible $\mathbf{y} \in \{0,1\}^{18}$ est défini par :
+$$y_i = \begin{cases}
+1 & \text{si } i = d^* \text{ ou }i = a^*\\
+0 & \text{sinon}
+\end{cases}$$
+\end{definition}
+
+Cette construction encode simultanément la case de départ optimale et la case d'arrivée optimale dans un format compatible avec l'architecture de sortie.
+
+\section{Fonction de perte : entropie croisée}
+
+\begin{definition}[Fonction de perte composite]
+La fonction de perte utilisée combine les entropies croisées des deux têtes de prédiction :
+$$\mathcal{L}(\mathbf{x}; d^*, a^*) = -\sum_{i=0}^{17} y_i \log a^{(L)}_i = -\log(p_d)_{d^*} - \log(p_a)_{a^*}$$
+\end{definition}
+
+Cette formulation présente plusieurs avantages théoriques :
+\begin{itemize}
+  \item \textbf{Convexité} par rapport aux paramètres de la dernière couche
+  \item \textbf{Gradient non-nul} même pour des prédictions très confiantes mais erronées
+  \item \textbf{Interprétation probabiliste} naturelle
+\end{itemize}
+
+\section{Algorithme de rétropropagation}
+
+\subsection{Gradient en sortie : propriété fondamentale}
+
+% dL / dz(n)i = a(n)i - kron(d,i) - krond(a,i)
+% dL / da(k-1)i = SUM( dz(k)j * w(k)ji )j
+% dL / dz(k-1)i = (dL / da(k-1)i) * a(k-1)i * (1 - a(k-1)i)
+
+\begin{theorem}[Gradient simplifié softmax avec entropie croisée]
+Pour la combinaison softmax avec entropie croisée, le gradient par rapport aux logits se simplifie remarquablement :
+$$\delta^{(L)}_i \equiv \frac{\partial \mathcal{L}}{\partial z^{(L)}_i} = a^{(L)}_i - y_i, \quad \forall i \in \{0, 1, \ldots, 17\}$$
+\end{theorem}
+
+\begin{proof}
+
+Sachant que la fonction d'activation softmax est définie par :
+
+$$a_i = \frac{e^{z_i}}{\sum_{j=0}^{n_L} e^{z_j}}$$
+
+et que la fonction de perte est :
+
+$$\mathcal{L} = -\sum_{j} y_j \log(\text{a}_j) =-\log\big(a_{d^\star}\big) - \log\big(a_{a^\star}\big)$$
+
+
+On calcule :
+
+$$\frac{\partial \mathcal{L}}{\partial z_i} 
+= \frac{\partial}{\partial z_i} \Big( -\log(a_{d^\star}) - \log(a_{a^\star}) \Big)$$
+
+\paragraph{Pour $i \in \{0, 1, \ldots, 8\}$ (softmax départ)}
+
+\paragraph{Cas 1 : $i = d^\star$}
+
+$$\frac{\partial}{\partial z_{d^\star}} \big(-\log(a_{d^\star})\big) 
+= - \frac{1}{a_{d^\star}} \cdot \frac{\partial a_{d^\star}}{\partial z_{d^\star}}$$
+
+Or,
+
+$$\frac{\partial a_{d^\star}}{\partial z_{d^\star}} 
+= a_{d^\star}(1 - a_{d^\star})$$
+
+Donc,
+
+$$\frac{\partial}{\partial z_{d^\star}} \big(-\log(a_{d^\star})\big)
+= - \frac{1}{a_{d^\star}} \cdot a_{d^\star}(1 - a_{d^\star})
+= -(1 - a_{d^\star})
+= a_{d^\star} - 1$$
+
+\paragraph{Cas 2 : $i \neq d^\star$}
+
+$$\frac{\partial}{\partial z_i} \big(-\log(a_{d^\star})\big) 
+= - \frac{1}{a_{d^\star}} \cdot \frac{\partial a_{d^\star}}{\partial z_i}$$
+
+Or,
+
+$$\frac{\partial a_{d^\star}}{\partial z_i} 
+= -a_{d^\star} a_i$$
+
+Donc,
+
+$$\frac{\partial}{\partial z_i} \big(-\log(a_{d^\star})\big) 
+= - \frac{1}{a_{d^\star}} \cdot (-a_{d^\star} a_i)
+= a_i$$
+
+\paragraph{De même pour $i \in \{9, 10, \ldots, 17\}$ (softmax arrivée)}
+
+\paragraph{Résultat général}
+
+On obtient alors :
+
+$$\frac{\partial \mathcal{L}}{\partial z_i} = a_i - \mathbf{1}_{\{i = d^\star\}} - \mathbf{1}_{\{i = a^\star\}}$$
+
+où
+$$
+\mathbf{1}_{\{i = d^\star\}} =
+\begin{cases}
+1 & \text{si } i = d^\star \text{ ou } i = a^\star, \\
+0 & \text{sinon},
+\end{cases}
+$$
+
+D'où,
+$$
+\boxed{
+\delta^{(L)}_i \equiv \frac{\partial \mathcal{L}}{\partial z^{(L)}_i} = a^{(L)}_i - y_i, \quad \forall i \in \{0, 1, \ldots, 17\}}
+$$
+
+\end{proof}
+
+\subsection{Rétropropagation dans les couches cachées}
+
+\begin{theorem}[Formule de rétropropagation générale]
+Pour une couche cachée $k < L$ avec activation sigmoïde :
+$$\delta^{(k-1)}_j
+= \Big(\sum_{i=1}^{n_k} \delta^{(k)}_i \, W^{(k)}_{ij}\Big)
+\cdot\; a^{(k-1)}_j\bigl(1-a^{(k-1)}_j\bigr)
+$$
+\end{theorem}
+
+\begin{proof}
+  
+Soit une couche \(k\) du réseau. Pour tout neurone \(i\) de cette couche on pose :
+
+$$z^{(k)}_i \;=\; \sum_{j=1}^{n_{k-1}} W^{(k)}_{ij}\, a^{(k-1)}_j \;+\; b^{(k)}_i,$$
+\qquad
+$$a^{(k)}_i \;=\; \sigma\bigl(z^{(k)}_i\bigr),$$
+
+où \(\sigma(z)=\dfrac{1}{1+e^{-z}}\) est la sigmoïde.
+
+Nous voulons obtenir \(\delta^{(k-1)}_j \coloneqq \dfrac{\partial \mathcal{L}}{\partial z^{(k-1)}_j}\) en fonction des quantités connues en couche \(k\).
+
+\bigskip
+
+\paragraph{Dérivée de la perte par rapport à l'activation \(a^{(k-1)}_j\).}
+
+Par la règle de la chaîne, \(a^{(k-1)}_j\) n'apparaît que dans les pré-activations \(z^{(k)}_i\) de la couche suivante, donc
+\[
+\frac{\partial \mathcal{L}}{\partial a^{(k-1)}_j}
+= \sum_{i=1}^{n_k} \frac{\partial \mathcal{L}}{\partial z^{(k)}_i}\;
+  \frac{\partial z^{(k)}_i}{\partial a^{(k-1)}_j}.
+\]
+Or \(z^{(k)}_i = \sum_{t} W^{(k)}_{it}\, a^{(k-1)}_t + b^{(k)}_i\), donc
+\[
+\frac{\partial z^{(k)}_i}{\partial a^{(k-1)}_j} = W^{(k)}_{ij}.
+\]
+D'où la formule indexée simple :
+$$
+\frac{\partial \mathcal{L}}{\partial a^{(k-1)}_j}
+= \sum_{i=1}^{n_k} \delta^{(k)}_i \, W^{(k)}_{ij}
+\;
+$$
+$$
+\qquad\text{où }\delta^{(k)}_i \coloneqq \frac{\partial \mathcal{L}}{\partial z^{(k)}_i}.
+$$
+
+\bigskip
+
+\paragraph{Dérivée de la sigmoïde.}
+Montrons la dérivée de \(\sigma\) :
+
+$$\sigma(z)=\frac{1}{1+e^{-z}},\qquad
+\frac{d\sigma}{dz}
+= \frac{e^{-z}}{(1+e^{-z})^2}.$$
+
+Mais
+
+$$1-\sigma(z)=\frac{e^{-z}}{1+e^{-z}},$$
+
+donc
+
+$$\frac{d\sigma}{dz}
+= \sigma(z)\bigl(1-\sigma(z)\bigr).$$
+
+Ainsi, en termes d'activations,
+
+$$\sigma'\bigl(z^{(k-1)}_j\bigr) = a^{(k-1)}_j\bigl(1-a^{(k-1)}_j\bigr).$$
+
+\bigskip
+
+\paragraph{Passage de \(\partial\mathcal{L}/\partial a^{(k-1)}_j\) à \(\partial\mathcal{L}/\partial z^{(k-1)}_j\).}
+On applique la chaîne sur \(a^{(k-1)}_j = \sigma(z^{(k-1)}_j)\) :
+
+$$\delta^{(k-1)}_j
+= \frac{\partial \mathcal{L}}{\partial z^{(k-1)}_j}
+= \frac{\partial \mathcal{L}}{\partial a^{(k-1)}_j}
+  \cdot \frac{d a^{(k-1)}_j}{d z^{(k-1)}_j}
+= \Big(\sum_{i=1}^{n_k} \delta^{(k)}_i \, W^{(k)}_{ij}\Big)
+  \cdot \sigma'\bigl(z^{(k-1)}_j\bigr).$$
+
+En remplaçant \(\sigma'\) par \(a(1-a)\) on obtient la formule usuelle :
+
+$$\boxed{\;
+\delta^{(k-1)}_j
+= \Big(\sum_{i=1}^{n_k} \delta^{(k)}_i \, W^{(k)}_{ij}\Big)
+\; \cdot\; a^{(k-1)}_j\bigl(1-a^{(k-1)}_j\bigr)
+\;}$$
+
+\end{proof}
+
+\subsection{Gradients des paramètres}
+
+\begin{theorem}[Gradients des poids et biais]
+Les gradients des paramètres de chaque couche $k$ sont donnés par :
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W^{(k)}_{ij}} &= \delta^{(k)}_i \cdot a^{(k-1)}_j \label{eq:grad_weights}\\
+\frac{\partial \mathcal{L}}{\partial b^{(k)}_i} &= \delta^{(k)}_i \label{eq:grad_bias}
+\end{align}
+\end{theorem}
+
+\chapter{Initialisation et stabilité numérique}
+
+\section{Initialisation Xavier : fondements théoriques}
+
+\begin{theorem}[Initialisation Xavier uniforme]
+Pour une couche avec $n_{\text{in}}$ entrées et $n_{\text{out}}$ sorties, l'initialisation Xavier uniforme tire les poids selon :
+$W_{ij} \sim \mathcal{U}\left(-\sqrt{\frac{6}{n_{\text{in}} + n_{\text{out}}}}, \sqrt{\frac{6}{n_{\text{in}} + n_{\text{out}}}}\right)$
+\end{theorem}
+
+\begin{remark}
+Cette initialisation vise à maintenir la variance des activations approximativement constante à travers les couches, évitant ainsi les problèmes de gradient qui disparaît ou explose lors de l'entraînement de réseaux profonds.
+\end{remark}
+
+\subsection{Justification mathématique}
+
+L'objectif de l'initialisation Xavier est de satisfaire :
+$\text{Var}(a^{(k)}_i) \approx \text{Var}(a^{(k-1)}_j), \quad \forall k$
+
+Pour une activation linéaire $z = \sum_{j} W_{ij} a_j$, sous l'hypothèse d'indépendance :
+$\text{Var}(z) = \sum_{j} W_{ij}^2 \text{Var}(a_j) \approx n_{\text{in}} \cdot \text{Var}(W) \cdot \text{Var}(a)$
+
+Pour maintenir $\text{Var}(z) = \text{Var}(a)$, il faut :
+$n_{\text{in}} \cdot \text{Var}(W) = 1 \Rightarrow \text{Var}(W) = \frac{1}{n_{\text{in}}}$
+
+L'initialisation Xavier généralise cette condition en considérant également la propagation arrière, d'où la moyenne harmonique $\frac{2}{n_{\text{in}} + n_{\text{out}}}$.
+
+\section{Algorithme de mise à jour des paramètres}
+
+\subsection{Descente de gradient standard}
+
+\begin{definition}[Règle de mise à jour]
+À chaque itération $t$, les paramètres sont mis à jour selon :
+\begin{align}
+W^{(k)}_{t+1} &= W^{(k)}_t - \alpha \nabla_{W^{(k)}} \mathcal{L}_t\\
+\mathbf{b}^{(k)}_{t+1} &= \mathbf{b}^{(k)}_t - \alpha \nabla_{\mathbf{b}^{(k)}} \mathcal{L}_t
+\end{align}
+où $\alpha > 0$ est le taux d'apprentissage.
+\end{definition}
+
+% \subsection{Considérations sur la convergence}
+
+% \begin{important}
+% Le choix du taux d'apprentissage $\eta$ est critique :
+% \begin{itemize}
+%   \item \textbf{Trop élevé} : risque d'oscillations ou de divergence
+%   \item \textbf{Trop faible} : convergence lente, risque de blocage dans un minimum local
+% \end{itemize}
+% Des techniques adaptatives (Adam, RMSprop) peuvent être utilisées pour automatiser ce choix.
+% \end{important}
+
+\chapter{Sélection de coups et évaluation}
+
+\section{Stratégie de décision composite}
+
+\begin{definition}[Score de coup]
+La décision finale combine les probabilités des deux têtes selon :
+$S(d,a) = (p_d)_d \cdot (p_a)_a$
+pour tout coup candidat $(d,a) \in \mathcal{P} \times \mathcal{P}$.
+\end{definition}
+
+% \section{Application du masquage}
+
+% En pratique, tous les coups ne sont pas légaux dans un état donné. Soit $M : \mathcal{P} \times \mathcal{P} \to \{0,1\}$ la fonction de masque indiquant la validité des coups.
+
+% \begin{theorem}{Sélection avec contraintes}
+% Le coup optimal respectant les contraintes légales est :
+% $\left(d^*, a^*\right) = \arg\max_{(d,a)} S(d,a) \cdot M(d,a)$
+% \end{theorem}
+
+% Alternativement, une renormalisation peut être appliquée :
+% $S_{\text{normalized}}(d,a) = \frac{S(d,a) \cdot M(d,a)}{\sum_{(d',a')} S(d',a') \cdot M(d',a')}$
+
+\chapter{Analyse de performance et validation}
+
+\section{Métriques d'évaluation}
+
+% \subsection{Précision par composante}
+% \begin{align}
+% \text{Précision}_{\text{départ}} &= \frac{\text{Nombre de cases de départ correctement prédites}}{\text{Nombre total d'exemples}}\\
+% \text{Précision}_{\text{arrivée}} &= \frac{\text{Nombre de cases d'arrivée correctement prédites}}{\text{Nombre total d'exemples}}
+% \end{align}
+
+\subsection{Précision globale}
+$\text{Précision}_{\text{coup}} = \frac{\text{Nombre de coups }(d,a)\text{ entièrement corrects}}{\text{Nombre total d'exemples}}$
+
+\section{Validation croisée et overfitting}
+
+\begin{remark}
+Étant donné la nature synthétique des données, une attention particulière doit être portée à :
+\begin{itemize}
+  \item La diversité des configurations générées
+  \item L'équilibre entre les différentes phases de jeu
+  \item La validation sur des positions non vues pendant l'entraînement
+\end{itemize}
+\end{remark}
+
+\chapter{Implémentation et aspects techniques}
+
+\section{Architecture modulaire en Rust}
+
+L'implémentation est structurée en modules spécialisés :
+
+\begin{itemize}
+  \item \texttt{\color{primaryblue}init.rs} : Initialisation des paramètres et configuration du réseau
+  \item \texttt{\color{primaryblue}learn.rs} : Algorithmes d'entraînement et optimisation
+  \item \texttt{\color{primaryblue}prediction.rs} : Interface de prédiction et évaluation
+  \item \texttt{\color{primaryblue}nn.rs} : Noyau du réseau neuronal et opérations matricielles
+\end{itemize}
+
+\section{Optimisations numériques}
+
+\subsection{Stabilité du softmax}
+Pour éviter les débordements numériques, l'implémentation utilise la forme stabilisée :
+$\text{softmax}(z_i) = \frac{e^{z_i - z_{\max}}}{\sum_j e^{z_j - z_{\max}}}$
+où $z_{\max} = \max_j z_j$.
+
+\subsection{Gestion de la précision}
+L'utilisation de types flottants double précision (\texttt{f64}) est recommandée pour maintenir la stabilité numérique lors d'entraînements prolongés.
+
+\appendix
+
+\chapter{Dérivations mathématiques complètes}
+
+\section{Récapitulatif des notations}
+\begin{itemize}
+  \item $\mathbf{a}^{(0)} = \mathbf{x} \in \mathbb{R}^{n_0}$ : vecteur d'entrée (avec $n_0 = 46$)
+  \item Pour $k = 1, \ldots, L$ : couche $k$ de dimension $m_k$
+  \item Couche de sortie : $m_L = 18$
+  \item $\mathbf{z}^{(k)} = W^{(k)} \mathbf{a}^{(k-1)} + \mathbf{b}^{(k)}$, $\mathbf{a}^{(k)} = \phi^{(k)}(\mathbf{z}^{(k)})$
+  \item Étiquette : $\mathbf{y} \in \{0,1\}^{18}$ avec deux composantes égales à 1 aux indices $d^*$ et $9+a^*$
+  \item $\boldsymbol{\delta}^{(k)} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}^{(k)}} \in \mathbb{R}^{m_k}$
+\end{itemize}
+
+\section{Dérivées explicites pour la couche de sortie ($k = L$)}
+
+\begin{theorem}[Gradient de sortie détaillé]
+Pour $i \in \{0, 1, \ldots, 17\}$ :
+$\delta^{(L)}_i = a^{(L)}_i - y_i$
+
+Les gradients des paramètres de la couche de sortie sont :
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W^{(L)}_{ij}} &= \delta^{(L)}_i \cdot a^{(L-1)}_j, \quad i \in \{0, \ldots, 17\}, \; j \in \{0, \ldots, m_{L-1}-1\}\\
+\frac{\partial \mathcal{L}}{\partial b^{(L)}_i} &= \delta^{(L)}_i
+\end{align}
+\end{theorem}
+
+\section{Dérivées pour les couches cachées ($k < L$)}
+
+\begin{theorem}[Rétropropagation complète]
+Pour $k \in \{L-1, L-2, \ldots, 1\}$ :
+$\delta^{(k)}_i = \left(\sum_{j=0}^{m_{k+1}-1} W^{(k+1)}_{ji} \delta^{(k+1)}_j\right) \cdot a^{(k)}_i (1 - a^{(k)}_i)$
+
+Les gradients des paramètres sont :
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W^{(k)}_{ij}} &= \delta^{(k)}_i \cdot a^{(k-1)}_j\\
+\frac{\partial \mathcal{L}}{\partial b^{(k)}_i} &= \delta^{(k)}_i
+\end{align}
+\end{theorem}
+
+% \section{Formulation matricielle compacte}
+
+% \begin{important}
+% \begin{align}
+% \boldsymbol{\delta}^{(L)} &= \mathbf{a}^{(L)} - \mathbf{y}\\
+% \boldsymbol{\delta}^{(k)} &= \left((W^{(k+1)})^T \boldsymbol{\delta}^{(k+1)}\right) \odot \left(\mathbf{a}^{(k)} \odot (1 - \mathbf{a}^{(k)})\right), \quad k = L-1, \ldots, 1\\
+% \nabla_{W^{(k)}} \mathcal{L} &= \boldsymbol{\delta}^{(k)} (\mathbf{a}^{(k-1)})^T\\
+% \nabla_{\mathbf{b}^{(k)}} \mathcal{L} &= \boldsymbol{\delta}^{(k)}
+% \end{align}
+% \end{important}
+
+\chapter{Extensions et perspectives}
+
+\section{Améliorations possibles}
+
+\subsection{Techniques d'optimisation avancées}
+\begin{itemize}
+  \item \textbf{Adam optimizer} : adaptation automatique du taux d'apprentissage
+  \item \textbf{Batch normalization} : normalisation des activations entre couches
+  \item \textbf{Dropout} : régularisation par masquage aléatoire de neurones
+\end{itemize}
+
+\subsection{Architectures alternatives}
+\begin{itemize}
+  \item \textbf{Réseaux convolutifs} : exploitation de la structure spatiale du plateau
+  \item \textbf{Réseaux résiduels} : connexions directes pour faciliter l'entraînement profond
+  \item \textbf{Attention mechanisms} : focus adaptatif sur les régions importantes du plateau
+\end{itemize}
+
+% \section{Généralisation à des plateaux plus grands}
+
+% L'architecture actuelle peut être étendue pour des plateaux $n \times m$ en ajustant :
+% \begin{itemize}
+%   \item La dimension d'entrée : $5nm + 1$ (one-hot pour chaque case + joueur)
+%   \item Les têtes de sortie : $2nm$ neurones (départ et arrivée)
+%   \item Les fonctions de masquage pour respecter les règles étendues
+% \end{itemize}
+
+% \begin{remark}
+% Cette généralisation préserve la structure mathématique fondamentale tout en s'adaptant à la complexité croissante de l'espace d'états.
+% \end{remark}
+
+\chapter{Conclusion}
+
+Ce document a présenté une analyse exhaustive de l'architecture et de l'implémentation d'un réseau de neurones pour le jeu Fanorona 3×3. L'approche développée combine une fondation mathématique rigoureuse avec une implémentation efficace, démontrant l'applicabilité des techniques d'apprentissage profond aux jeux traditionnels.
+
+Les contributions principales incluent :
+\begin{enumerate}
+  \item Une formulation mathématique complète des algorithmes de propagation
+  \item Une architecture modulaire et extensible
+  \item Une analyse détaillée de la stabilité numérique et des choix d'implémentation
+  \item Des perspectives d'extension vers des problèmes plus complexes
+\end{enumerate}
+
+L'architecture générique proposée offre une base solide pour l'exploration de variantes plus sophistiquées et l'application à d'autres jeux de stratégie combinatoire.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
