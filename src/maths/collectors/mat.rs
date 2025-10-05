@@ -50,6 +50,27 @@ impl Matrix {
             .enumerate()
             .for_each(|(u, v)| v.0.extend(&rhs[u].0));
     }
+    pub fn elm_prod(&self, rhs: &Matrix) -> Matrix {
+        self.map_zip_el(rhs, |a, b| a * b)
+    }
+    // Map with a function that takes each lement i,j of the two matrix (self, rhs)
+    pub fn map_zip_el<F>(&self, rhs: &Matrix, f: F) -> Matrix
+    where
+        F: Fn(f64, f64) -> f64,
+    {
+        let (m, c1) = self.dim();
+        let (l2, n) = rhs.dim();
+        assert_eq!((m, c1), (l2, n), "Incompatible dimensions for map zip");
+        let mut res = Matrix::init_0(m, n);
+
+        for i in 0..m {
+            for j in 0..n {
+                res[i][j] = f(self[i][j], rhs[i][j]);
+            }
+        }
+
+        res
+    }
 
     pub fn map_elms<F>(&self, f: F) -> Matrix
     where

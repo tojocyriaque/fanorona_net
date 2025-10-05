@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use crate::testing::train::batch_train;
 #[allow(unused)]
 use crate::{
     data::datasets::{balance_dataset_uniform, inspect_dataset},
@@ -7,6 +8,7 @@ use crate::{
     games::fanorona::*,
     maths::collectors::{mat::*, vec::*},
     nn::NeuralNetwork,
+    testing::*,
 };
 
 mod data;
@@ -28,19 +30,31 @@ fn main() {
     // redirect it into a file
     // generate_dataset(7);
 
-    // ==================== MODEL CREATION
-    let layer_sizes: Vec<usize> = vec![64, 128, 18];
+    // ==================== MODEL CREATION ===============================
+    let layer_sizes: Vec<usize> = vec![32, 18];
     let input_size = 46;
-    let batch_size = 100;
-    let learning_rate = 0.02;
-    let input = Matrix::init_xavier(batch_size, input_size);
+    let batch_size = 10000;
+    let learning_rate = 0.2;
+    let tr_file = "datasets/depth7/balanced_training.txt";
+    let initial_epoch = 1;
+    let n_epoch = 1000;
+    let model_name = "fn_md_v1";
+    let models_dir = "models";
 
-    let nn = NeuralNetwork::new(&layer_sizes, input_size, learning_rate);
+    let model_bin = "models/fn_md_v1/fn_md_v1_E_123.bin";
+    let mut model = NeuralNetwork::from_file(model_bin.to_owned());
     let timer = Instant::now();
-    nn.batch_forward(&input);
+    batch_train(
+        &mut model,
+        tr_file,
+        batch_size,
+        initial_epoch,
+        n_epoch,
+        model_name,
+        models_dir,
+    );
     let elapsed = timer.elapsed();
-
-    println!("(BATCHED) Time elapsed: {:?}", elapsed);
+    println!("(MINIMABTCH LEARNING) Time elapsed: {:?}", elapsed);
 
     // =================================== PLAYING IN CONSOLE (for model testing maybe)
     // let mut i_board = vec![0, 0, 1, 1, 1, -1, -1, 0, -1];
