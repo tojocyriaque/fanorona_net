@@ -56,6 +56,7 @@ pub fn batch_train(
         let elapsed = epoch_timer.elapsed();
         println!("Epoque {}/{} terminée en {:?}", epoch, i_epoch + n_epoch - 1, elapsed);
 
+        // ================ MAKING THE PREDICTION IS SLOWER THAN THE TRAINING
         // let ((acc_a, acc_d, acc), loss) = predict_moves(model, tr_file);
         // println!("Prediction => a:{acc_a:.2}%, d:{acc_d:.2}%, (d,a):{acc:.2}%, loss:{loss:.2}");
         //
