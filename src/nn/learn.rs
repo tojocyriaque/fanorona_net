@@ -45,10 +45,25 @@ impl NeuralNetwork {
     }
 
     #[allow(unused, non_snake_case)]
-    pub fn batch_grads(&mut self, X: &Matrix, Y: &Matrix) -> (Vec<Matrix>, Vec<Matrix>) {
+    pub fn batch_grads(&mut self, X: &Matrix, Y: &Matrix) -> (Vec<Matrix>, Vec<Matrix>, f64) {
         let (Z, A) = self.batch_forward(X);
+
         let batch_size = X.len();
         let d = 1.0 / batch_size as f64;
+
+        //  --------------- CALCULATION OF BATCH LOSS
+        let A_out = &A[self.ln - 1]; // (batch_size, 18)
+        //
+        // // Pour éviter log(0), ajoute un petit epsilon
+        let eps = 1e-12;
+        let log_probs = A_out.map_elms(|x| (x.max(eps)).ln());
+        //
+        // // Perte = -sum(Y .* log(A)) par ligne, puis moyenne
+        let loss_per_sample: Vec<f64> = Y
+            .map_zip_el(&log_probs, |a, b| a * b)
+            .map_lines(|row| -row.sum());
+        let batch_loss: f64 = Vector(loss_per_sample).mean();
+        // ---------------------------------
 
         // initializations of gradients
         let mut GW: Vec<Matrix> = init_matrixes(&self.ls, self.is, false);
@@ -71,7 +86,7 @@ impl NeuralNetwork {
         }
         GW[0] = &X.tr() * &GZ[0];
 
-        (GW, GZ)
+        (GW, GZ, batch_loss)
     }
 
     #[allow(unused, non_snake_case)]
