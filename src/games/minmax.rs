@@ -88,3 +88,25 @@ pub fn minimax_multi(
     }
     minmax_score
 }
+
+// Transforming array of sorted moves into distrubution of probability
+#[allow(unused)]
+pub fn moves_proba(s_moves: &Vec<GMove>, sq_num: usize) -> (Vec<f64>, Vec<f64>) {
+    // probabilty for start square
+    let mut start_proba: Vec<f64> = vec![0.0; sq_num];
+    // probabilty for end square
+    let mut end_proba: Vec<f64> = vec![0.0; sq_num];
+
+    let l = s_moves.len() as f64;
+    for (idx, &(s, e)) in s_moves.iter().enumerate() {
+        let k = idx as f64 + 1.0;
+        // best move has best proba (got this sequence formula from the fact that the sum is always 1)
+        let proba = (1.0 - k / (l + 1.0)) * (2.0 / l);
+
+        start_proba[s] = proba;
+        end_proba[e] = proba;
+
+        println!("Move: {:?} Proba: {proba}", (s, e));
+    }
+    (start_proba, end_proba)
+}

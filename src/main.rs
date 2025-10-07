@@ -10,7 +10,7 @@ use crate::{
     testing::*,
 };
 use crate::{
-    games::minmax::minimax_multi,
+    games::minmax::{minimax_multi, moves_proba},
     testing::{predict::test_model, train::batch_train},
 };
 
@@ -86,12 +86,13 @@ fn main() {
     // test_model(model_bin.as_str(), tr_file);
 
     // =================================== PLAYING IN CONSOLE (for model testing maybe)
-    let mut i_board = vec![0, 0, 1, 1, 1, -1, -1, 0, -1];
+    let i_board = vec![0, 0, 1, 1, 1, -1, -1, 0, -1];
     let mut s_moves: Vec<GMove> = Vec::new();
     minimax_multi(&i_board, 6, 1, true, &mut s_moves);
-
+    let (s_pb, e_pb) = moves_proba(&s_moves, 9);
     show_board(i_board);
     println!("Moves: {:?}", s_moves);
-
+    println!("start proba => {:.4?}", s_pb);
+    println!("end   proba => {:.4?}", e_pb);
     // play_fanorona(&mut i_board, model_bin.as_str());
 }

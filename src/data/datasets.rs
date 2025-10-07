@@ -76,7 +76,9 @@ pub fn generate_dataset(depth: usize) {
 
                     // valid if player one is the current player
                     if v1 {
-                        minimax(&combination, depth, 1, &mut b_mv, true);
+                        let mut b_moves: Vec<GMove> = Vec::new();
+                        // minimax(&combination, depth, 1, &mut b_mv, true);
+                        minimax_multi(&combination, depth, 1, true, &mut b_moves);
                         println!(
                             "{} 1 {} {}",
                             combination.clone().into_iter().join(" "),
@@ -87,7 +89,9 @@ pub fn generate_dataset(depth: usize) {
 
                     // valid if the player 2 is the current player
                     if v2 {
-                        minimax(&combination, depth, -1, &mut b_mv, true);
+                        // minimax(&combination, depth, -1, &mut b_mv, true);
+                        let mut b_moves: Vec<GMove> = Vec::new();
+                        minimax_multi(&combination, depth, 1, true, &mut b_moves);
                         println!(
                             "{} 2 {} {}",
                             combination.into_iter().join(" "),
