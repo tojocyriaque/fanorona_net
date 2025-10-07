@@ -39,7 +39,7 @@ fn main() {
     let learning_rate = 0.4;
     let input_size = 46;
 
-    let initial_epoch = 1201;
+    let initial_epoch = 1701;
     let n_epoch = 500;
     let batch_size = 61288; // make it the tr_file length for full batch
 
