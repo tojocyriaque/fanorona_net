@@ -33,6 +33,7 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
     ])
 }
 
+#[allow(unused)]
 impl Fanorontelo {
     // Heuristic evaluation
     pub fn evaluate_board(&self) -> i32 {
