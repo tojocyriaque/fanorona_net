@@ -29,18 +29,15 @@ impl NeuralNetwork {
         }
 
         let l = self.ln - 1;
-        let n_l = self.ls[l];
-        let half = n_l / 2;
+        // let n_l = self.ls[l];
+        // let half = n_l / 2;
 
-        Z_vec.push((Inp * &self.weights[l]).add_each_line(&self.biases[l]));
-        let mut Al: Matrix = Matrix(Z_vec[l].map_lines(|v| {
-            let mut sf = v[0..=half - 1].softmax();
-            sf.extend(v[half..=n_l - 1].softmax());
+        let Zl = (Inp * &self.weights[l]).add_each_line(&self.biases[l]);
+        let Al = Matrix(Zl.map_lines(|l| l.softmax()));
 
-            sf
-        }));
-
+        Z_vec.push(Zl);
         A_vec.push(Al);
+
         (Z_vec, A_vec)
     }
 
@@ -58,7 +55,7 @@ impl NeuralNetwork {
         let eps = 1e-12;
         let log_probs = A_out.map_elms(|x| (x.max(eps)).ln());
         //
-        // // Perte = -sum(Y .* log(A)) par ligne, puis moyenne
+        // // Perte = -sum(Y * log(A)) par ligne, puis moyenne
         let loss_per_sample: Vec<f64> = Y
             .map_zip_el(&log_probs, |a, b| a * b)
             .map_lines(|row| -row.sum());

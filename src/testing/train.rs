@@ -1,9 +1,12 @@
+use crate::maths::collectors::vec::Vector;
+#[allow(unused)]
 use crate::{
     data::loads::{load_positions, save_parameters_binary},
     maths::collectors::mat::Matrix,
-    nn::{NeuralNetwork, init::one_hot},
+    nn::{NeuralNetwork, init::one_hot_fanorona},
     testing::predict::predict_moves,
 };
+
 use rand::seq::SliceRandom;
 
 #[allow(dead_code, non_snake_case)]
@@ -43,15 +46,10 @@ pub fn batch_train(
 
             for (k, pos) in batch.iter().enumerate() {
                 let board = pos[0..=8].to_vec();
-                let player = pos[9];
-                let converted = one_hot(board, player as usize);
-                let d_star: usize = pos[10] as usize;
-                let a_star: usize = pos[11] as usize + 9;
+                let player: usize = pos[9] as usize;
 
-                X[k] = converted;
-
-                Y[k][d_star] = 1.0;
-                Y[k][a_star] = 1.0;
+                X[k] = one_hot_fanorona(board, player);
+                Y[k] = Vector(pos[10..].to_vec());
             }
 
             let (GW, GZ, bl) = model.batch_grads(&X, &Y);

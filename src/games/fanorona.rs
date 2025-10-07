@@ -4,7 +4,7 @@ use std::{collections::HashMap, usize};
 
 use crate::{
     games::minmax::minimax,
-    nn::{NeuralNetwork, init::one_hot},
+    nn::{NeuralNetwork, init::one_hot_fanorona},
 };
 
 pub type FanoronaBoard = Vec<i32>;
@@ -21,51 +21,26 @@ pub fn evaluate_board(b: &FanoronaBoard) -> i32 {
     b.iter().sum()
 }
 
-fn swap_minmax(min: &mut i32, max: &mut i32, val: &mut i32) {
-    *max = *max.max(val);
-    *min = *min.min(val);
-}
-
 pub fn g_over(b: &FanoronaBoard) -> i32 {
-    let mut max_sum: i32 = -100;
-    let mut min_sum: i32 = 100;
-    let mut index: usize;
+    let win_lines = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8], // lignes
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8], // colonnes
+        [0, 4, 8],
+        [2, 4, 6], // diagonales
+    ];
 
-    //     HORIZONTAL
-    for i in 0..3 {
-        let mut sum = 0;
-        for j in 0..3 {
-            index = 3 * i + j;
-            sum += b[index];
+    for win_line in win_lines {
+        let sum: i32 = win_line.map(|k| b[k]).iter().sum();
+        if sum.abs() == 6 {
+            return sum / 6;
         }
-        swap_minmax(&mut min_sum, &mut max_sum, &mut sum);
-    }
-    // println!("HORIZONTAL: {max_sum} {min_sum}");
-
-    //     VERTICAL
-    for i in 0..3 {
-        let mut sum = 0;
-        for j in 0..3 {
-            index = 3 * j + i;
-            sum += b[index];
-        }
-        swap_minmax(&mut min_sum, &mut max_sum, &mut sum);
     }
 
-    //     DIAGONAL
-    let mut sd1 = b[0] + b[4] + b[8];
-    let mut sd2 = b[2] + b[4] + b[6];
-
-    swap_minmax(&mut min_sum, &mut max_sum, &mut sd1);
-    swap_minmax(&mut min_sum, &mut max_sum, &mut sd2);
-
-    if max_sum == 6 {
-        1
-    } else if min_sum == -6 {
-        -1
-    } else {
-        0
-    }
+    0
 }
 
 pub fn play(b: &mut FanoronaBoard, (s, e): GMove, pl: i32) -> bool {
@@ -178,9 +153,9 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
             let mut best_move = (0, 0);
             // minimax(board, 8, -curr_player, &mut best_move, true); // using minimax bot
 
-            let p = &board[0..=8];
+            let pos: Vec<f64> = board[0..=8].iter().map(|&f| f as f64).collect();
             let player = if -curr_player == 1 { 1 } else { 2 };
-            let cv_pos = one_hot(p.to_vec(), player as usize);
+            let cv_pos = one_hot_fanorona(pos, player as usize);
 
             // let ((d, pd), (a, pa)) = nn.predict(cv_pos.clone());
             // (d, a);

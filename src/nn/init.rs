@@ -29,15 +29,15 @@ pub fn init_matrixes(ls: &Vec<usize>, is: usize, rand_init: bool) -> Vec<Matrix>
 
 // ============================== CONVERSION =========================
 #[allow(dead_code)]
-pub fn one_hot(pos: Vec<i32>, c_pl: usize) -> Vector {
+pub fn one_hot_fanorona(pos: Vec<f64>, c_pl: usize) -> Vector {
     let mut v = pos
         .iter()
         .flat_map(|&idx| match idx {
-            0 => vec![1., 0., 0., 0., 0.],
-            1 => vec![0., 1., 0., 0., 0.],
-            2 => vec![0., 0., 1., 0., 0.],
-            -1 => vec![0., 0., 0., 0., 1.],
-            -2 => vec![0., 0.0, 0., 1., 0.],
+            0.0 => vec![1., 0., 0., 0., 0.],
+            1.0 => vec![0., 1., 0., 0., 0.],
+            2.0 => vec![0., 0., 1., 0., 0.],
+            -1.0 => vec![0., 0., 0., 0., 1.],
+            -2.0 => vec![0., 0.0, 0., 1., 0.],
             _ => {
                 panic!("Invalind value on the board: {}", idx); // ← ICI
             }

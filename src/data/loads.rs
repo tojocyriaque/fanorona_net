@@ -23,15 +23,15 @@ pub struct NNParameters {
 }
 
 // ============= LOAD POSISIONTS FROM FILE
-pub fn load_positions(filename: &str) -> Vec<Vec<i32>> {
+pub fn load_positions(filename: &str) -> Vec<Vec<f64>> {
     match read_to_string(filename) {
         Ok(content) => {
             content
                 .lines()
                 .filter_map(|line| {
                     line.split_whitespace() // ← plus robuste que " "
-                        .map(|s| s.parse::<i32>())
-                        .collect::<Result<Vec<i32>, _>>()
+                        .map(|s| s.parse::<f64>())
+                        .collect::<Result<Vec<f64>, _>>()
                         .ok() // ← ignore les lignes mal formées
                 })
                 .collect()

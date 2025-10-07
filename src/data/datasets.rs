@@ -79,11 +79,14 @@ pub fn generate_dataset(depth: usize) {
                         let mut b_moves: Vec<GMove> = Vec::new();
                         // minimax(&combination, depth, 1, &mut b_mv, true);
                         minimax_multi(&combination, depth, 1, true, &mut b_moves);
+                        let dist = moves_proba_comb(&b_moves, 9);
                         println!(
-                            "{} 1 {} {}",
+                            "{} 1 {}",
                             combination.clone().into_iter().join(" "),
-                            b_mv.0,
-                            b_mv.1
+                            dist.iter()
+                                .map(|x| format!("{:.4}", x))
+                                .collect::<Vec<_>>()
+                                .join(" ")
                         );
                     }
 
@@ -91,12 +94,15 @@ pub fn generate_dataset(depth: usize) {
                     if v2 {
                         // minimax(&combination, depth, -1, &mut b_mv, true);
                         let mut b_moves: Vec<GMove> = Vec::new();
-                        minimax_multi(&combination, depth, 1, true, &mut b_moves);
+                        minimax_multi(&combination, depth, -1, true, &mut b_moves);
+                        let dist = moves_proba_comb(&b_moves, 9);
                         println!(
-                            "{} 2 {} {}",
-                            combination.into_iter().join(" "),
-                            b_mv.0,
-                            b_mv.1
+                            "{} 2 {}",
+                            combination.clone().into_iter().join(" "),
+                            dist.iter()
+                                .map(|x| format!("{:.4}", x))
+                                .collect::<Vec<_>>()
+                                .join(" ")
                         );
                     }
                 }
@@ -138,7 +144,7 @@ fn valid_pos(position: Vec<i32>, pl: i32) -> bool {
 
 #[allow(unused)]
 pub fn inspect_dataset(filename: &str) {
-    let data: Vec<Vec<i32>> = load_positions(filename);
+    let data: Vec<Vec<f64>> = load_positions(filename);
     let d_count = vec![0; 9];
     let mut a_count = vec![0; 9];
 

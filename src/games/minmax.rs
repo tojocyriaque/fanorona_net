@@ -56,7 +56,7 @@ pub fn minimax_multi(
     depth: usize,
     is_max: i32,
     is_root: bool,
-    moves: &mut Vec<(GMove)>,
+    moves: &mut Vec<GMove>,
 ) -> i32 {
     let winner = g_over(b);
     if depth == 0 || winner != 0 {
@@ -103,10 +103,24 @@ pub fn moves_proba(s_moves: &Vec<GMove>, sq_num: usize) -> (Vec<f64>, Vec<f64>) 
         // best move has best proba (got this sequence formula from the fact that the sum is always 1)
         let proba = (1.0 - k / (l + 1.0)) * (2.0 / l);
 
-        start_proba[s] = proba;
-        end_proba[e] = proba;
+        start_proba[s] += proba;
+        end_proba[e] += proba;
 
         println!("Move: {:?} Proba: {proba}", (s, e));
     }
     (start_proba, end_proba)
+}
+
+#[allow(unused)]
+pub fn moves_proba_comb(s_moves: &Vec<GMove>, sq_num: usize) -> Vec<f64> {
+    let mut proba: Vec<f64> = vec![0.0; sq_num * sq_num];
+    let v_l = s_moves.len() as f64;
+    for (idx, (s, e)) in s_moves.iter().enumerate() {
+        let k = 1.0 + idx as f64;
+        let pb = (1.0 - k / (v_l + 1.0)) * (2.0 / v_l);
+        let i = s * sq_num + e;
+        proba[i] = pb;
+    }
+
+    proba
 }

@@ -1,3 +1,2 @@
-pub type GameMove = (usize, usize);
-pub trait GameState {}
-
+// pub type GameMove = (usize, usize);
+// pub trait GameState {}

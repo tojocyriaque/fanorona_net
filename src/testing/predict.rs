@@ -1,7 +1,8 @@
 use std::fs::*;
 use std::io::*;
 
-use crate::nn::init::one_hot;
+use crate::games::fanorona::possible;
+use crate::nn::init::one_hot_fanorona;
 use crate::nn::*;
 
 #[allow(unused)]
@@ -23,30 +24,43 @@ pub fn predict_moves(nn: &mut NeuralNetwork, filename: &str) -> ((f64, f64, f64)
 
     for (idx, line_result) in reader.lines().enumerate() {
         // read line one by one
-        let pos: Vec<i32> = line_result
+        let pos: Vec<f64> = line_result
             .unwrap()
             .split(" ")
             .map(|s| s.parse().unwrap())
             .collect();
 
-        let p = &pos[0..=8];
+        let brd = &pos[0..=8].to_vec();
         let player = &pos[9];
-        let d_star: usize = pos[10] as usize;
-        let a_star: usize = pos[11] as usize;
-        let cv_pos = one_hot(p.to_vec(), *player as usize);
+        // let d_star: usize = pos[10] as usize;
+        // let a_star: usize = pos[11] as usize;
+        let y = pos[10..].to_vec();
+        let cv_pos = one_hot_fanorona(brd.to_vec(), *player as usize);
 
-        let ((d, pd), (a, pa)) = nn.predict(cv_pos);
-        loss -= pd.ln() + pa.ln();
+        let ((d, a), proba, sf) = nn.predict(cv_pos);
+        loss -= y
+            .iter()
+            .zip(sf.into_iter())
+            .map(|(yi, pi)| yi * pi.ln())
+            .sum::<f64>();
 
-        if d == d_star {
-            correct_d += 1;
-        }
-        if a == a_star {
-            correct_a += 1;
-        }
-        if d == d_star && a == a_star {
+        let board: Vec<i32> = brd.iter().map(|&f| f as i32).collect();
+        let pl: i32 = if *player == 1.0 { 1 } else { -1 };
+        let valid_moves = possible(&board, pl);
+
+        if valid_moves.contains(&(d, a)) {
             correct += 1;
         }
+
+        // if d == d_star {
+        //     correct_d += 1;
+        // }
+        // if a == a_star {
+        //     correct_a += 1;
+        // }
+        // if d == d_star && a == a_star {
+        //     correct += 1;
+        // }
         pos_len += 1;
     }
 
@@ -62,11 +76,11 @@ pub fn predict_moves(nn: &mut NeuralNetwork, filename: &str) -> ((f64, f64, f64)
 #[allow(unused)]
 pub fn predict_from_pos(model: &str, pos: Vec<i32>) -> (usize, usize) {
     let mut nn = NeuralNetwork::from_file(model.to_string());
-    let p = &pos[0..=8];
+    let p: Vec<f64> = pos[0..=8].iter().map(|&f| f as f64).collect();
     let player = &pos[9];
-    let cv_pos = one_hot(p.to_vec(), *player as usize);
+    let cv_pos = one_hot_fanorona(p, *player as usize);
 
-    let ((d, pd), (a, pa)) = nn.predict(cv_pos);
+    let ((d, a), proba, sf) = nn.predict(cv_pos);
     (d, a)
 }
 
