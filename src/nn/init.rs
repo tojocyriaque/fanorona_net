@@ -52,7 +52,8 @@ pub fn one_hot_fanorona(pos: Vec<f64>, c_pl: usize) -> Vector {
 #[allow(unused)]
 impl NeuralNetwork {
     pub fn from_file(filename: String) -> Self {
-        let params = load_parameters_binary(filename).expect("Failed to load parameters");
+        let params = load_parameters_binary(filename.clone())
+            .expect(format!("Failed to load parameters from : {}", filename).as_str());
         NeuralNetwork {
             is: params.input_size,
             ls: params.layer_sizes,
