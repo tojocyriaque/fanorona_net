@@ -13,43 +13,6 @@ use crate::games::fanorona::*;
 //     0.0
 // }
 
-// Minimax algorithm to find best move
-pub fn minimax(
-    b: &FanoronaBoard,
-    depth: usize,
-    is_max: i32,
-    b_mv: &mut GMove,
-    is_root: bool,
-) -> i32 {
-    let winner = g_over(b);
-    if depth == 0 || winner != 0 {
-        return evaluate_board(b);
-    }
-
-    let mut minmax_score = if is_max == 1 { i32::MIN } else { i32::MAX };
-    let p_mvs = possible(b, is_max);
-
-    if p_mvs.is_empty() {
-        // No valid moves
-        return evaluate_board(b);
-    }
-
-    for mv in p_mvs {
-        let mut b_t = b.clone();
-        play(&mut b_t, mv, is_max);
-        let ev: i32 = minimax(&b_t, depth - 1, -is_max, b_mv, false);
-
-        if is_max == 1 && ev > minmax_score || is_max == -1 && ev < minmax_score {
-            minmax_score = ev;
-            // root node of the minimax tree
-            if is_root {
-                *b_mv = mv;
-            }
-        }
-    }
-    minmax_score
-}
-
 // Minimax algo to get multiple moves
 pub fn minimax_multi(
     b: &FanoronaBoard,
@@ -65,7 +28,7 @@ pub fn minimax_multi(
 
     let mut minmax_score = if is_max == 1 { i32::MIN } else { i32::MAX };
     let p_mvs = possible(b, is_max);
-
+    let mut scored_moves: Vec<(GMove, i32)> = Vec::new();
     if p_mvs.is_empty() {
         // No valid moves
         return evaluate_board(b);
@@ -78,14 +41,23 @@ pub fn minimax_multi(
 
         if is_max == 1 && ev > minmax_score || is_max == -1 && ev < minmax_score {
             minmax_score = ev;
-            if is_root {
-                let idx = moves.len();
-                moves.insert(idx, mv);
-            }
-        } else if is_root {
-            moves.push(mv);
+        }
+
+        if is_root {
+            scored_moves.push((mv, ev));
         }
     }
+
+    if is_max == 1 {
+        scored_moves.sort_by(|a, b| b.1.cmp(&a.1));
+    } else {
+        scored_moves.sort_by(|a, b| a.1.cmp(&b.1));
+    }
+
+    for (mv, _score) in scored_moves {
+        moves.push(mv)
+    }
+
     minmax_score
 }
 
@@ -106,7 +78,7 @@ pub fn moves_proba(s_moves: &Vec<GMove>, sq_num: usize) -> (Vec<f64>, Vec<f64>) 
         start_proba[s] += proba;
         end_proba[e] += proba;
 
-        println!("Move: {:?} Proba: {proba}", (s, e));
+        // println!("Move: {:?} Proba: {proba}", (s, e));
     }
     (start_proba, end_proba)
 }

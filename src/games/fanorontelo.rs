@@ -3,7 +3,7 @@
 use std::{collections::HashMap, usize};
 
 use crate::{
-    games::minmax::minimax,
+    games::{fanorona::GMove, minmax::minimax_multi},
     nn::{NeuralNetwork, init::one_hot_fanorona},
 };
 
@@ -126,11 +126,11 @@ impl Fanorontelo {
     #[allow(unused)]
     pub fn play_with_bot(&mut self, model: &str) {
         let mut nn: NeuralNetwork = NeuralNetwork::from_file(model.to_string());
-        let mut curr_player = 1;
+        let mut human_player = 1;
         while self.game_over() == 0 {
             let mut input = String::new();
             self.show_board();
-            // println!("> Joueur {} : ", (3 - curr_player) / 2);
+            // println!("> Joueur {} : ", (3 - human_player) / 2);
 
             std::io::stdin().read_line(&mut input);
             let mv: Vec<usize> = input
@@ -143,26 +143,27 @@ impl Fanorontelo {
             let d: usize = mv[0];
             let a: usize = mv[1];
 
-            let valid_play: bool = self.play_move((d, a), curr_player);
+            let valid_play: bool = self.play_move((d, a), human_player);
             if valid_play {
                 // println!("human: G_over: {}", g_over(board));
 
                 println!("CPU...");
 
-                let mut best_move = (0, 0);
-                // minimax(board, 8, -curr_player, &mut best_move, true); // using minimax bot
+                // minimax(board, 8, -human_player, &mut best_move, true); // using minimax bot
 
                 let p: Vec<f64> = self.board[0..=8].iter().map(|&f| f as f64).collect();
-                let player = if -curr_player == 1 { 1 } else { 2 };
+                let player = if -human_player == 1 { 1 } else { 2 };
                 let cv_pos = one_hot_fanorona(p, player as usize);
 
                 // let ((d, pd), (a, pa)) = nn.predict(cv_pos.clone());
                 // (d, a);
                 //
                 // let ((d, _), (a, _)) = nn.predict(cv_pos); // using the network
-                minimax(&self.board, 7, -curr_player, &mut best_move, true);
-                best_move = (d, a);
-                let played = self.play_move(best_move, -curr_player);
+                let mut best_moves: Vec<GMove> = Vec::new();
+                minimax_multi(&self.board, 7, -human_player, true, &mut best_moves);
+
+                let mut best_move = best_moves[0];
+                let played = self.play_move(best_move, -human_player);
                 if !played {
                     println!("CPU did not play !! it's move: {:?}", best_move);
                 }
