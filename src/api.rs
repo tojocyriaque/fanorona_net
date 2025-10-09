@@ -35,7 +35,7 @@ type AppState = String;
 // --- Point d’entrée ---
 #[tokio::main]
 async fn main() {
-    const MODEL_TO_USE: &str = "models/fn_model_dReal_ng_v1/fn_model_dReal_ng_v1_E1000.bin";
+    const MODEL_TO_USE: &str = "models/fn_model_dReal_ng_v4/fn_model_dReal_ng_v4_E15.bin";
     const SERVER_ADDRESS: &str = "0.0.0.0:3000";
 
     println!("Chargement du modèle : {}", MODEL_TO_USE);
@@ -76,6 +76,8 @@ async fn predict_handler(
         d,
         a,
     };
+
+    println!("d: {} a:{} ",d,a);
 
     (StatusCode::OK, Json(response))
 }
