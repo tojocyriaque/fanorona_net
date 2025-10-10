@@ -3,6 +3,7 @@
 use std::{collections::HashMap, usize};
 
 use crate::{games::minmax::minimax, nn::NeuralNetwork};
+use crate::nn::init::one_hot;
 
 pub type FanoronaBoard = Vec<i32>;
 pub type GMove = (usize, usize);
@@ -116,16 +117,25 @@ pub fn possible(b: &FanoronaBoard, pl: i32) -> Vec<GMove> {
 
 // DISPLAY
 #[allow(unused)]
-pub fn show_board(board: FanoronaBoard) {
+pub fn show_board(board: FanoronaBoard, player: usize) {
     println!("-----------------------");
     for i in 0..3 {
+        if player == 2 { print!("        "); }
         for j in 0..3 {
             let idx = 3 * i + j;
             let p = board[idx];
             if p > 0 {
-                print!("X ");
+                if p == 1 { 
+                    print!("x "); 
+                } else {
+                    print!("X ");
+                }
             } else if p < 0 {
-                print!("O ");
+                if p == -1 {
+                    print!("o ");
+                } else {
+                    print!("O ");
+                }
             } else {
                 print!("_ ");
             }
@@ -141,7 +151,7 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
     let mut curr_player = 1;
     while g_over(board) == 0 {
         let mut input = String::new();
-        show_board(board.to_vec());
+        show_board(board.to_vec(), 1);
         // println!("> Joueur {} : ", (3 - curr_player) / 2);
 
         std::io::stdin().read_line(&mut input);
@@ -157,18 +167,32 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
 
         let valid_play: bool = play(board, (d, a), curr_player);
         if valid_play {
-            println!("human: G_over: {}", g_over(board));
+            // println!("human: G_over: {}", g_over(board));
 
-            println!("CPU...");
+            // println!("CPU...");
 
-            let mut best_move = (0, 0);
-            minimax(board, 8, -curr_player, &mut best_move, true);
-            play(board, best_move, -curr_player);
-            println!("CPU: G_over: {}", g_over(board));
+            // let mut best_move = (0, 0);
+            // minimax(board, 8, -curr_player, &mut best_move, true);
+            // play(board, best_move as GMove, -curr_player); 
+
+            let mut x = board.clone();
+            // Convertir le plateau en f64 (et ajouter éventuellement le joueur si nécessaire)
+            let mut x: Vec<i32> = board.iter().map(|&v| v as i32).collect();
+            let cv_pos = one_hot(x.to_vec(), 2);
+            // Prédiction du meilleur coup
+            let (d, a) = nn.predict_move(cv_pos);
+
+            // Jouer le coup CPU
+            println!("Bot joue {:?}", (d, a));
+
+            play(board, (d, a), -curr_player);
+            show_board(board.to_vec(), 2);
+
+            // println!("CPU: G_over: {}", g_over(board));
         } else {
             println!("Invalide !!")
         }
-        println!("Board => {:?}", board);
+        // println!("Board => {:?}", board);
     }
 
     println!("Game is over!!")

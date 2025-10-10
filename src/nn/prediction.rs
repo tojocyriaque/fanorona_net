@@ -1,29 +1,22 @@
 use crate::nn::*;
+use crate::data::restructured_datasets::{all_possible_actions};
 
 impl NeuralNetwork {
-    pub fn predict(&self, x: Vector) -> ((usize, f64), (usize, f64)) {
+    pub fn predict(&self, x: Vector) -> (usize, f64) {
         let (_z, a) = &self.feed_forward(x);
-        let sf = &a[self.ln - 1];
-        let mut d_star = 0;
-        let mut a_star = 0;
+        let sf = &a[self.ln - 1]; // 32 éléments
+        let (action_idx, prob) = sf
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .unwrap();
 
-        let mut pd_star = 0.0;
-        let mut pa_star = 0.0;
+        (action_idx, *prob)
+    }
 
-        // Finding the best probabilities
-        for u in 0..18 {
-            let p = sf[u];
-            if pd_star < p && u < 9 {
-                pd_star = p;
-                d_star = u;
-            }
-
-            if pa_star < p && u > 8 {
-                pa_star = p;
-                a_star = u - 9;
-            }
-        }
-
-        return ((d_star, pd_star), (a_star, pa_star));
+    pub fn predict_move(&self, x: Vector) -> (usize, usize) {
+        let (action_idx, _prob) = self.predict(x);
+        let action = all_possible_actions()[action_idx]; // convert index -> (start, end)
+        action
     }
 }

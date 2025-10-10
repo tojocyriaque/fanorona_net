@@ -31,9 +31,7 @@ impl NeuralNetwork {
             }
         }
 
-        let mut sf = z[self.ln - 1][0..=8].softmax();
-        sf.extend(z[self.ln - 1][9..=17].softmax());
-
+        let sf = z[self.ln - 1].softmax(); // 32 éléments
         a.push(sf);
         (z, a)
     }
@@ -41,8 +39,9 @@ impl NeuralNetwork {
     pub fn compute_gradients(
         &self,
         x: &Vector,
-        d_star: usize,
-        a_star: usize,
+        idx: usize
+        // d_star: usize,
+        // a_star: usize,
     ) -> (Vec<Vector>, Vec<Matrix>) {
         let (z, a) = self.feed_forward(x.clone());
 
@@ -51,9 +50,10 @@ impl NeuralNetwork {
 
         // Compute dz for output layer (loss gradient)
         for i in 0..self.ls[self.ln - 1] {
-            let kron_di = if i == d_star { 1.0 } else { 0.0 };
-            let kron_ai = if i == a_star { 1.0 } else { 0.0 };
-            dz[self.ln - 1][i] = a[self.ln - 1][i] - kron_di - kron_ai;
+            dz[self.ln - 1][i] = a[self.ln - 1][i] - if i == idx { 1.0 } else { 0.0 };
+            // let kron_di = if i == d_star { 1.0 } else { 0.0 };
+            // let kron_ai = if i == a_star { 1.0 } else { 0.0 };
+            // dz[self.ln - 1][i] = a[self.ln - 1][i] - kron_di - kron_ai;
         }
 
         // Backpropagate through hidden layers
@@ -93,9 +93,9 @@ impl NeuralNetwork {
         }
     }
 
-    /// Classic backprop calling compute_gradients then apply_gradients
-    pub fn back_prop(&mut self, x: &Vector, d_star: usize, a_star: usize) {
-        let (dz, dw) = self.compute_gradients(x, d_star, a_star);
-        self.apply_gradients(&dz, &dw);
-    }
+    // Classic backprop calling compute_gradients then apply_gradients
+    // pub fn back_prop(&mut self, x: &Vector, d_star: usize, a_star: usize) {
+    //     let (dz, dw) = self.compute_gradients(x, d_star, a_star);
+    //     self.apply_gradients(&dz, &dw);
+    // }
 }

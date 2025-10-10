@@ -74,10 +74,12 @@ pub fn train_model_with_batch(
                 let player = pos[9];
                 let cv_pos = one_hot(p.to_vec(), player as usize);
 
-                let d_star: usize = pos[10] as usize;
-                let a_star: usize = pos[11] as usize;
+                // let d_star: usize = pos[10] as usize;
+                // let a_star: usize = pos[11] as usize;
 
-                let (dz, dw) = nn.compute_gradients(&cv_pos, d_star, a_star + 9);
+                let action_idx: usize = pos[10] as usize;
+
+                let (dz, dw) = nn.compute_gradients(&cv_pos, action_idx);
 
                 for k in 0..nn.ln {
                     for i in 0..dz[k].len() {
@@ -107,8 +109,8 @@ pub fn train_model_with_batch(
         }
 
         // --- Evaluate ---
-        let ((acc_a_train, acc_d_train, acc_train), loss_train) = predict_moves(nn, train_file);
-        let ((acc_a_val, acc_d_val, acc_val), loss_val) = predict_moves(nn, val_file);
+        let (acc_train, loss_train) = predict_moves(nn, train_file);
+        let (acc_val, loss_val) = predict_moves(nn, val_file);
 
         println!(
             "Epoch {}/{} | Train Acc: {:.4}%, Train Loss: {:.4} | Val Acc: {:.4}%, Val Loss: {:.4} | Lr: {:.6}",
