@@ -43,7 +43,7 @@ fn main() {
     // play(&mut tictactoe, &mut ne);
 
     let mut fn3_game = Fanorontelo {
-        board: [2, 2, -1, -1, 2, -2, 0, 0, 0, 2],
+        board: [1, -1, 1, -1, 1, -1, 0, 0, 1, 0],
     };
     fn3_game.play_with_bot(&mut ne);
 }
