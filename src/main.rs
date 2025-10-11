@@ -16,9 +16,9 @@ fn main() {
     let lr = 0.5;
     let epochs = 0;
     let layers = vec![512, output_size];
-
     let batch_size = 32;
-    let board_size = 10;
+
+    let board_size = 10; // the size of the game board (for fanorona3x3: 10 <the last element is the current player>)
 
     // ============= train dataset file ===================
     let tr_file = "dataset/fanorona/all.txt";
