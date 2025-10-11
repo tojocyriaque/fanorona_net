@@ -14,16 +14,16 @@ use crate::testing::train::init::init_matrixes;
 #[allow(unused)]
 pub fn continue_train_model_with_batch(
     model: &str,      // the model to train
-    model_name: &str, // name of the new model
     models_dir: &str,
     train_filename: &str,
     validation_filename: &str,
+    model_name: &str, // name of the new model
     epochs: usize,
     batch_size: usize,
     step_size: usize,
 ) {
     let mut nn = NeuralNetwork::from_file(model.to_string());
-    train_model_with_batch(&mut nn, models_dir, train_filename,validation_filename, model_name, epochs,batch_size,step_size);
+    train_model_with_batch(&mut nn, models_dir, train_filename, validation_filename, model_name, epochs, batch_size, step_size);
 }
 
 #[allow(unused)]
@@ -111,10 +111,10 @@ pub fn train_model_with_batch(
         // --- Evaluate ---
         let (acc_train, loss_train) = predict_moves(nn, train_file);
         let (acc_val, loss_val) = predict_moves(nn, val_file);
-
+        // let (acc_val, loss_val) = (acc_train, loss_train);
         println!(
             "Epoch {}/{} | Train Acc: {:.4}%, Train Loss: {:.4} | Val Acc: {:.4}%, Val Loss: {:.4} | Lr: {:.6}",
-            epoch + 1, epochs, acc_train, loss_train, acc_val, loss_val, nn.lr
+            epoch + 1, epochs, acc_train, loss_train, acc_train, loss_train, nn.lr
         );
 
         // --- ReduceLROnPlateau ---

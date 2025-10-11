@@ -1,8 +1,31 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::collections::HashMap;
+use rand::seq::SliceRandom;
 
 type GMove = (usize, usize);
+
+
+pub fn split_dataset(input: &str, train_out: &str, val_out: &str, ratio: f64) {
+    let file = File::open(input).unwrap();
+    let reader = BufReader::new(file);
+    let mut lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+    let mut rng = rand::thread_rng();
+    lines.shuffle(&mut rng);
+
+    let split_idx = (lines.len() as f64 * ratio) as usize;
+    let (train, val) = lines.split_at(split_idx);
+
+    let mut train_file = File::create(train_out).unwrap();
+    let mut val_file = File::create(val_out).unwrap();
+
+    for l in train {
+        writeln!(train_file, "{}", l).unwrap();
+    }
+    for l in val {
+        writeln!(val_file, "{}", l).unwrap();
+    }
+}
 
 /// Transforme le dataset : remplace (start,end) par l'index d'action
 pub fn transform_dataset(input_path: &str, output_path: &str) {

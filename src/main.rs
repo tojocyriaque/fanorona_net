@@ -1,12 +1,12 @@
 #[allow(unused)]
 use crate::{
-    data::datasets::{balance_dataset_uniform, split_dataset, inspect_dataset},
+    data::datasets::{balance_dataset_uniform, inspect_dataset},
     data::datasets::{generate_dataset, shuffle_dataset},
     games::fanorona::*,
     nn::NeuralNetwork,
     testing::train::{continue_train_model_with_batch},
     testing::{predict::test_model, train::{train_model_with_batch}},
-    data::restructured_datasets::{transform_dataset, all_possible_actions}
+    data::restructured_datasets::{transform_dataset, all_possible_actions, split_dataset}
 };
 
 mod data;
@@ -39,22 +39,23 @@ fn main() {
 
     // CREATING NEW MODELS
     // ==================== TRAINING CONSTANTS ===============================
-    const LEARNING_RATE: f64 = 0.01;
-    const EPOCHS: usize = 100;
-    const STEP_SIZE: usize = EPOCHS/2;
-    const BATCH_SIZE: usize = 2;
-    const TRAIN_FILE: &str = "datasets/indexed/training.txt";
-    const VAL_FILE: &str = "datasets/indexed/training.txt";
-    // this is the directory where you model will be registered
+    // const LEARNING_RATE: f64 = 0.01;
+    // const EPOCHS: usize = 1000;
+    // const STEP_SIZE: usize = EPOCHS/2;
+    // const BATCH_SIZE: usize = 2;
+    // const TRAIN_FILE: &str = "datasets/indexed/training.txt";
+    // const VAL_FILE: &str = "datasets/indexed/training.txt";
+    // // this is the directory where you model will be registered
 
-    const MODELS_DIR: &str = "models"; // Directory where models will be saved
-    // This is the identification of your model type
-    const MODEL_NAME: &str = "fn_model_restructured_ng_v2"; // Each model will be saved for every epochs of the training
-    const INPUT_SIZE: usize = 46;
-    // // =======================================================================
-    let layer_sizes: Vec<usize> = vec![64,64,32];
-    let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
-    train_model_with_batch(&mut nn, MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
+    // const MODELS_DIR: &str = "models"; // Directory where models will be saved
+    // // This is the identification of your model type
+    // const MODEL_NAME: &str = "fn_model_restructured_ng_v4"; // Each model will be saved for every epochs of the training
+    // const INPUT_SIZE: usize = 46;
+    // // // =======================================================================
+    // let layer_sizes: Vec<usize> = vec![64,64,32];
+    // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
+    // // train_model_with_batch(&mut nn, MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
+    // continue_train_model_with_batch("models/fn_model_restructured_ng_v3/fn_model_restructured_ng_v3_E100.bin", MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
 
     // // (if it is just an upgrade of a model you can continue it down here by loading the model)
     // let existent_model = "models/fn_model_dReal_ng_v7/fn_model_dReal_ng_v7_E55.bin";
@@ -76,15 +77,21 @@ fn main() {
     // let data_file: &str = "datasets/depth8/training.txt";
     // generate_dataset(7,data_file);
 
-    // =================================== TRANSFORM DATASET (with a depth as parameter)
+    // =================================== TRANSFORM DATASET 
     // let datafile = "datasets/depth7/training.txt";
     // let outputfile = "datasets/indexed/unindexed.txt";
     // transform_dataset(datafile, outputfile);
     // all_possible_actions();
 
+    // ===================================== SPLIT RESTRUCTURED DATASET 
+    // const datasets: &str = "datasets/indexed/training.txt";
+    // const train_file: &str = "datasets/indexed/train.txt";
+    // const test_file: &str = "datasets/indexed/test.txt";
+    // split_dataset(datasets, train_file, test_file, 0.8);
+
 
     // =================================== PLAYING IN CONSOLE (for model testing maybe)
-    // let mut i_board = vec![1, 0, -2, 0, -2, 1, 0, -2, 1];
-    // let model = "models/fn_model_restructured_ng_v1/fn_model_restructured_ng_v1_E22.bin";
-    // play_fanorona(&mut i_board, model);
+    let mut i_board = vec![-2, 1, 0, 0, -2, 1, 0, -2, 1];
+    let model = "models/fn_model_restructured_ng_v4/fn_model_restructured_ng_v4_E588.bin";
+    play_fanorona(&mut i_board, model);
 }
