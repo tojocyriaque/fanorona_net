@@ -169,6 +169,7 @@ impl Fanorontelo {
     #[allow(unused)]
     pub fn play_with_bot(&mut self, ne: &mut Neural) {
         loop {
+            // =============== Getting the human player input =======
             let mut input = String::new();
             self.show_board();
             // println!("> Joueur {} : ", (3 - human_player) / 2);
@@ -181,7 +182,9 @@ impl Fanorontelo {
             }
 
             let human = if self.board[9] == 1 { "X" } else { "0" };
-            println!("You... ({human})");
+            println!(
+                "You... ({human}), Enter two digits separated by space (square, target), ex:0 1"
+            );
             std::io::stdin().read_line(&mut input);
             let mv: Vec<usize> = input
                 .strip_suffix("\n")
@@ -192,9 +195,10 @@ impl Fanorontelo {
 
             let d: usize = mv[0];
             let a: usize = mv[1];
-
+            // ====================================================
             let valid_play: bool = self.play_move((d, a));
             if valid_play {
+                // ====================== CPU turn ====================
                 // println!("human: G_over: {}", g_over(board));
                 let cpu = if self.board[9] == 1 { "X" } else { "0" };
                 println!("CPU... ({cpu})");
