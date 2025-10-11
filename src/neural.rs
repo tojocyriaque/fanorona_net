@@ -338,7 +338,7 @@ impl Neural {
             data_size += 1.0;
         }
 
-        println!("Mouvements valides: {:.4}%", 100.0 * valid / data_size);
+        println!("Valid moves: {:.4}%", 100.0 * valid / data_size);
         correct / data_size
     }
 

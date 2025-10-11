@@ -33,7 +33,7 @@ fn main() {
 
     let acc = ne.test(board_size, tr_file, one_hot_fanorona, valid_fn3_move);
     println!(
-        "Meilleurs coups: {:.4}%, Train time: {:?}",
+        "Best moves: {:.4}%, Train time: {:?}",
         acc * 100.0,
         train_elapsed
     );
