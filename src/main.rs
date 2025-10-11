@@ -42,6 +42,7 @@ fn main() {
     // let mut tictactoe = Game::new();
     // play(&mut tictactoe, &mut ne);
 
+    // the last element if the current player (1 or 2)
     let mut fn3_game = Fanorontelo {
         board: [1, -1, 1, -1, 1, -1, 0, 0, 1, 0],
     };
