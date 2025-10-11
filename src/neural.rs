@@ -15,7 +15,6 @@ use crate::{dataset::load_dataset, fanorona3::one_hot_fanorona};
 pub type Matrix = Array2<f64>;
 pub type Vector = Array1<f64>;
 
-// ==================== SAVING AND LOADING PARAMETERS =========================
 //  Struct to represent the network parameters
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -111,9 +110,9 @@ impl Neural {
             let Zk = Inp.dot(&self.weights[k]) + &self.biases[k];
             // _____________ ACTIVATION _________________
             // Relu
-            let Ak = Zk.map(|&elt| if elt > 0.0 { elt } else { 0.0 });
+            let Ak = Zk.mapv(|elt| if elt > 0.0 { elt } else { 0.0 });
             // sigmoid
-            // let Ak = Zk.map(|&elt| 1.0 / (1.0 + elt.exp()));
+            // let Ak = Zk.mapv(|elt| 1.0 / (1.0 + elt.exp()));
             // -------------------------------------------
             Z.push(Zk);
             A.push(Ak);
@@ -227,7 +226,7 @@ impl Neural {
 
             datasets.shuffle(&mut shuffler);
 
-            for (correct_best, batch) in datasets.chunks(batch_size).enumerate() {
+            for (batch_idx, batch) in datasets.chunks(batch_size).enumerate() {
                 let bs = batch.len();
                 let mut x_s: Vec<Vector> = Vec::new();
                 let mut y_s: Vec<Vector> = Vec::new();
@@ -246,7 +245,7 @@ impl Neural {
                 let batch_elapsed = batch_start.elapsed();
                 // println!(
                 //     "Batch {} loss: {batch_loss} ({:?})",
-                //     correct_best + 1,
+                //    batch_idx + 1,
                 //     batch_elapsed
                 // );
 

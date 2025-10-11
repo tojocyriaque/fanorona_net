@@ -21,13 +21,13 @@ fn main() {
     let tr_file = "dataset/fanorona/all.txt";
 
     // ==== load model
-    let model = "models/fn_d6_6/epoch_30.bin";
+    let model = "models/fn_d6_7/epoch_10.bin";
     let mut ne = Neural::load_from_bin(model).unwrap();
 
     // ==== new model
     // let mut ne = Neural::xavier(layers, input_size);
     let train_start = std::time::Instant::now();
-    let save_dir = "models/fn_d6_7";
+    let save_dir = "models/fn_d6_8";
     ne.train(epochs, lr, board_size, batch_size, tr_file, save_dir);
     let train_elapsed = train_start.elapsed();
 
@@ -43,7 +43,7 @@ fn main() {
     // play(&mut tictactoe, &mut ne);
 
     let mut fn3_game = Fanorontelo {
-        board: [2, 2, -1, -1, 2, -2, 0, 0, 0, 1],
+        board: [2, 2, -1, -1, 2, -2, 0, 0, 0, 2],
     };
     fn3_game.play_with_bot(&mut ne);
 }

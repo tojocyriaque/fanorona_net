@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-ndarray = { version = "0.16.1", features = ["serde"] }
+ndarray = { version = "0.16.1", features = ["serde", "rayon"] }
 ndarray-rand = "0.15"
 serde = { version = "1.0", features = [ "derive"] }
 rayon = "1.0.8"
