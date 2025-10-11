@@ -20,14 +20,15 @@ pub type Vector = Array1<f64>;
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(unused)]
 pub struct Neural {
-    input_size: usize,
-    layers: Vec<usize>,
+    input_size: usize,  // one hot size
+    layers: Vec<usize>, // array of hidden layers and ouput layer sizes (number of neurons)
     weights: Vec<Matrix>,
     biases: Vec<Vector>,
 }
 
 #[allow(unused)]
 impl Neural {
+    // loading neural network from parameters
     pub fn from_params(
         input_size: usize,
         layers: Vec<usize>,
@@ -42,10 +43,12 @@ impl Neural {
         }
     }
 
+    // weights shapes
     pub fn config(&self) -> Vec<&[usize]> {
         self.weights.iter().map(|w| w.shape()).collect()
     }
 
+    // initialization of parameters with 0. as
     pub fn zeros(layers: Vec<usize>, input_size: usize) -> Self {
         let mut weights: Vec<Matrix> = Vec::new();
         let mut biases: Vec<Vector> = Vec::new();
@@ -70,6 +73,7 @@ impl Neural {
         }
     }
 
+    // initialization with the xacier uniform method for the weights
     pub fn xavier(layers: Vec<usize>, input_size: usize) -> Self {
         // xavier uniforme
         let limit = (6.0 / (input_size + layers[0]) as f64).sqrt();
@@ -143,6 +147,7 @@ impl Neural {
         (Z, A)
     }
 
+    // gradients calculations
     #[allow(non_snake_case)]
     pub fn batch_grads(&mut self, X: Matrix, Y: Matrix) -> (Vec<Matrix>, Vec<Matrix>) {
         let (Z, A) = self.batch_forward(&X);
@@ -174,6 +179,7 @@ impl Neural {
         (GZ, GW)
     }
 
+    // back propagation
     #[allow(non_snake_case)]
     pub fn batch_backward(&mut self, GW: Vec<Matrix>, GZ: Vec<Matrix>, lr: f64) {
         let layers_num = self.layers.len();
@@ -277,6 +283,7 @@ impl Neural {
         }
     }
 
+    // predicting the best class from 1 input
     #[allow(non_snake_case)]
     pub fn predict_best<F>(&mut self, board: &[f64], one_hot_conv: F) -> usize
     where
@@ -296,6 +303,10 @@ impl Neural {
         best_idx
     }
 
+    // testing the model with a test file (test_fname)
+    // one_hot_conv: the (callback) function to convert an input into one_hot
+    // mv_valid: a function that return if a move (prediction) is valid
+    // input_size: (the size of input (not the one hot)) ex: for fanorona3x3 game input_size is 10 (the lase element is the current player)
     pub fn test<F, V>(
         &mut self,
         input_size: usize,
@@ -342,6 +353,7 @@ impl Neural {
         correct / data_size
     }
 
+    // =============== SAVING AND LOADING PARAMETERS INFO BIN FILES ===================
     pub fn save_to_bin(&self, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
         let encoded = bincode::serialize(self)?;
         let mut file = File::create(filename)?;

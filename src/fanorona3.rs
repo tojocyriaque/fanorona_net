@@ -4,13 +4,14 @@ use std::{collections::HashMap, usize};
 
 use crate::neural::Neural;
 
-type BoardType = [i32; 10];
-type MoveType = (usize, usize);
+type Fn3Board = [i32; 10];
+type Fn3Move = (usize, usize);
 
 pub struct Fanorontelo {
-    pub board: BoardType,
+    pub board: Fn3Board,
 }
 
+// board to one hot conversion function
 pub fn one_hot_fanorona(board: &[f64]) -> Vec<f64> {
     let mut board_1hot: Vec<f64> = board[0..=8]
         .iter()
@@ -28,7 +29,8 @@ pub fn one_hot_fanorona(board: &[f64]) -> Vec<f64> {
     board_1hot
 }
 
-pub fn neighbours() -> HashMap<usize, Vec<usize>> {
+// neighbors of each point of the board
+pub fn neighbors() -> HashMap<usize, Vec<usize>> {
     HashMap::from([
         (0, vec![1, 3, 4]),
         (1, vec![0, 2, 4]),
@@ -42,6 +44,7 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
     ])
 }
 
+// function to validation a move (actualle mv is from 0 to 80 (81 moves possible))
 pub fn valid_fn3_move(board: &[f64], mv: usize) -> bool {
     let mut gm_brd: [i32; 10] = [0; 10];
     for (idx, &v) in board.iter().enumerate() {
@@ -62,7 +65,7 @@ pub fn valid_fn3_move(board: &[f64], mv: usize) -> bool {
 
 #[allow(unused)]
 impl Fanorontelo {
-    // Heuristic evaluation
+    // Heuristic evaluation of the game state
     pub fn evaluate_board(&self) -> i32 {
         let winner: i32 = self.game_over();
 
@@ -95,7 +98,7 @@ impl Fanorontelo {
         0
     }
 
-    pub fn play_move(&mut self, (s, e): MoveType) -> bool {
+    pub fn play_move(&mut self, (s, e): Fn3Move) -> bool {
         let pl = self.board[9];
         let player = if pl == 1 { 1 } else { -1 };
         let winner: i32 = self.game_over();
@@ -103,7 +106,7 @@ impl Fanorontelo {
             return false;
         }
 
-        let moves: Vec<MoveType> = self.possible_moves();
+        let moves: Vec<Fn3Move> = self.possible_moves();
         let move_is_possible = moves.contains(&(s, e));
         if move_is_possible {
             let st_v = self.board[s];
@@ -121,12 +124,12 @@ impl Fanorontelo {
         false
     }
 
-    pub fn possible_moves(&self) -> Vec<MoveType> {
+    pub fn possible_moves(&self) -> Vec<Fn3Move> {
         let pl = self.board[9];
         let player = if pl == 1 { 1 } else { -1 };
 
-        let g_neighbours = neighbours();
-        let mut moves: Vec<MoveType> = vec![];
+        let g_neighbours = neighbors();
+        let mut moves: Vec<Fn3Move> = vec![];
         for sq in 0..self.board.len() - 1 {
             let piece = self.board[sq];
             if piece * player > 0 {
@@ -162,6 +165,7 @@ impl Fanorontelo {
         println!("-----------------------")
     }
 
+    // playing the game against a model
     #[allow(unused)]
     pub fn play_with_bot(&mut self, ne: &mut Neural) {
         loop {

@@ -35,6 +35,7 @@ impl Game {
         Game { board: [0; 9] }
     }
 
+    // counting empty cells
     pub fn empty(&self) -> Vec<usize> {
         (0..9).filter(|&idx| self.board[idx].eq(&0)).collect()
     }
@@ -61,10 +62,12 @@ impl Game {
         0
     }
 
+    // checking is the game is a tie
     pub fn draw(&self) -> bool {
         self.empty().len() == 0 && self.game_over() == 0
     }
 
+    // playing a move (sq is from 0 to 8)
     pub fn play(&mut self, sq: usize) {
         assert!(self.board[sq] == 0, "Non empty square !!");
         assert!(self.game_over() == 0, "Game is over !!");
@@ -87,6 +90,7 @@ impl Game {
         }
     }
 
+    // heuristic evaluation of the game board
     pub fn eval_board(&self) -> i32 {
         let winner = self.game_over();
         let mut score = 0;
@@ -106,6 +110,7 @@ impl Game {
         [score, 100, -100][winner]
     }
 
+    // finding the best move from the current game state (using minimax)
     pub fn best_move(&mut self, is_root: bool, best: &mut usize) -> i32 {
         let empties = self.empty().len();
         let player = 2 - empties % 2;
@@ -140,6 +145,7 @@ impl Game {
         minimax_score
     }
 
+    // playing a game against a NN model
     #[allow(unused)]
     fn play_with_bot(&mut self, ne: &mut Neural) {
         loop {

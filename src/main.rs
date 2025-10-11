@@ -10,6 +10,7 @@ mod tictactoe;
 
 #[allow(non_snake_case, unused)]
 fn main() {
+    // ============== MODEL AND TRAINING CONSTANTS ================
     let input_size = 46;
     let output_size = 81;
     let lr = 0.5;
@@ -18,14 +19,18 @@ fn main() {
 
     let batch_size = 32;
     let board_size = 10;
+
+    // ============= train dataset file ===================
     let tr_file = "dataset/fanorona/all.txt";
 
-    // ==== load model
+    // ==== load model from binaries
     let model = "models/fn_d6_7/epoch_10.bin";
     let mut ne = Neural::load_from_bin(model).unwrap();
 
-    // ==== new model
+    // ==== new model (creating new model from nothing)
     // let mut ne = Neural::xavier(layers, input_size);
+
+    // ================= TRAINING ========================
     let train_start = std::time::Instant::now();
     let save_dir = "models/fn_d6_8";
     ne.train(epochs, lr, board_size, batch_size, tr_file, save_dir);
@@ -39,6 +44,7 @@ fn main() {
     );
     // println!("Meilleures coups: {:?}%", acc * 100.0);
 
+    // ================= TESTING THE MODEL WITH A GAME AGAINST IT
     // let mut tictactoe = Game::new();
     // play(&mut tictactoe, &mut ne);
 

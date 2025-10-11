@@ -6,14 +6,14 @@ use std::{
 use crate::{neural::Vector, tictactoe::Game};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Board {
+pub struct Tictactoe {
     cells: [usize; 9], // 0 = vide, 1 = X, -1 = O
 }
 
 #[allow(dead_code, unused)]
-impl Board {
+impl Tictactoe {
     fn new() -> Self {
-        Board { cells: [0; 9] }
+        Tictactoe { cells: [0; 9] }
     }
 
     fn count(&self, player: usize) -> usize {
@@ -74,7 +74,7 @@ pub fn generate_all_boards() -> Vec<[usize; 9]> {
 
     // Génère toutes les combinaisons possibles (3^9 = 19683)
     for i in 0..19683 {
-        let mut board = Board::new();
+        let mut board = Tictactoe::new();
         let mut temp = i;
 
         // Convertit en base 3
