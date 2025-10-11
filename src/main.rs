@@ -44,7 +44,7 @@ fn main() {
 
     // the last element if the current player (1 or 2)
     let mut fn3_game = Fanorontelo {
-        board: [1, -1, 1, -1, 1, -1, 0, 0, 1, 0],
+        board: [1, -1, 1, -1, 1, -1, 0, 0, 1, 2],
     };
     fn3_game.play_with_bot(&mut ne);
 }
