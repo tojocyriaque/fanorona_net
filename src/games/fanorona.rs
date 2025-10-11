@@ -98,7 +98,10 @@ pub fn neighbours() -> HashMap<usize, Vec<usize>> {
     ])
 }
 
-pub fn possible(b: &FanoronaBoard, pl: i32) -> Vec<GMove> {
+pub fn possible(b: &FanoronaBoard, player: i32) -> Vec<GMove> {
+    let pl = if player == 1 { 1 } else { -1 };
+    // println!("{:?}", b);
+    // println!("{} => {}", player, pl);
     let g_neighbours = neighbours();
     let mut moves: Vec<GMove> = vec![];
     for sq in 0..b.len() {
@@ -112,6 +115,7 @@ pub fn possible(b: &FanoronaBoard, pl: i32) -> Vec<GMove> {
             }
         }
     }
+    // println!("Moves: {:?}", moves);
     moves
 }
 

@@ -49,7 +49,7 @@ fn main() {
 
     const MODELS_DIR: &str = "models"; // Directory where models will be saved
     // This is the identification of your model type
-    const MODEL_NAME: &str = "fn_model_restructured_ng_v5"; // Each model will be saved for every epochs of the training
+    const MODEL_NAME: &str = "fn_model_restructured_ng_v6"; // Each model will be saved for every epochs of the training
     const INPUT_SIZE: usize = 46;
     // // =======================================================================
     let layer_sizes: Vec<usize> = vec![64,64,32];
@@ -92,6 +92,6 @@ fn main() {
 
     // =================================== PLAYING IN CONSOLE (for model testing maybe)
     // let mut i_board = vec![-1, 1, 0, 0, -1, 1, 0, -1, 1];
-    // let model = "models/fn_model_restructured_ng_v4/fn_model_restructured_ng_v4_E588.bin";
+    // let model = "models/fn_model_restructured_ng_v5/fn_model_restructured_ng_v5_E240.bin";
     // play_fanorona(&mut i_board, model);
 }
