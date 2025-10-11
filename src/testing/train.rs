@@ -10,6 +10,8 @@ use crate::maths::collectors::vec::Vector;
 use crate::maths::collectors::mat::Matrix;
 use crate::testing::train::init::init_vectors;
 use crate::testing::train::init::init_matrixes;
+use crate::data::restructured_datasets::{all_possible_actions};
+use crate::games::fanorona::{possible};
 
 #[allow(unused)]
 pub fn continue_train_model_with_batch(
@@ -58,6 +60,8 @@ pub fn train_model_with_batch(
     let mut decalage: f64 = 0.0;
     let mut step_decay: f64 = 0.0;
 
+    let all_actions = all_possible_actions();
+
     for epoch in 0..epochs {
         training_pos.shuffle(&mut shuffler);
 
@@ -73,13 +77,19 @@ pub fn train_model_with_batch(
                 let p = &pos[0..=8];
                 let player = pos[9];
                 let cv_pos = one_hot(p.to_vec(), player as usize);
-
-                // let d_star: usize = pos[10] as usize;
-                // let a_star: usize = pos[11] as usize;
-
+                
+                let legal_moves = possible(&p.to_vec(), player as i32);
+                let legal_moves_idx: Vec<usize> = legal_moves.iter()
+                    .filter_map(|m| all_actions.iter().position(|a| a == m))
+                    .collect();
+                    
+                    // let d_star: usize = pos[10] as usize;
+                    // let a_star: usize = pos[11] as usize;
+                    
                 let action_idx: usize = pos[10] as usize;
+                // println!("Best IDX : {:?} Legal {:?}", action_idx, legal_moves_idx);
 
-                let (dz, dw) = nn.compute_gradients(&cv_pos, action_idx);
+                let (dz, dw) = nn.compute_gradients(&cv_pos, action_idx, &legal_moves_idx);
 
                 for k in 0..nn.ln {
                     for i in 0..dz[k].len() {
@@ -109,17 +119,17 @@ pub fn train_model_with_batch(
         }
 
         // --- Evaluate ---
-        let (acc_train, loss_train) = predict_moves(nn, train_file);
-        let (acc_val, loss_val) = predict_moves(nn, val_file);
+        let (acc_train_exact, acc_train_soft, loss_train) = predict_moves(nn, train_file);
+        let (acc_val_exact, acc_val_soft, loss_val) = predict_moves(nn, val_file);
         // let (acc_val, loss_val) = (acc_train, loss_train);
         println!(
-            "Epoch {}/{} | Train Acc: {:.4}%, Train Loss: {:.4} | Val Acc: {:.4}%, Val Loss: {:.4} | Lr: {:.6}",
-            epoch + 1, epochs, acc_train, loss_train, acc_train, loss_train, nn.lr
+            "Epoch {}/{} | Train Acc: E({:.4}%) S({:.4}%), Train Loss: {:.4} | Val Acc: E({:.4}%) S({:.4}%), Val Loss: {:.4} | Lr: {:.6}",
+            epoch + 1, epochs, acc_train_exact, acc_train_soft, loss_train, acc_val_exact, acc_val_soft, loss_val, nn.lr
         );
 
         // --- ReduceLROnPlateau ---
-        if acc_val > best_val_acc {
-            best_val_acc = acc_val;
+        if acc_val_soft > best_val_acc {
+            best_val_acc = acc_val_soft;
             epochs_no_improve = 0;
         } else {
             epochs_no_improve += 1;

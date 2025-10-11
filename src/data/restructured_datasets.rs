@@ -84,8 +84,8 @@ pub fn transform_dataset(input_path: &str, output_path: &str) {
 
     }
 
-    println!("✅ Transformation terminée !");
-    println!("⚠️ Nombre de coups invalides ignorés : {}", invalid_count);
+    println!("Transformation terminée !");
+    println!("Nombre de coups invalides ignorés : {}", invalid_count);
 }
 
 /// Graphe des voisins sur le plateau 3x3
@@ -117,6 +117,6 @@ pub fn all_possible_actions() -> Vec<GMove> {
             actions.push((s, e));
         }
     }
-    println!("{:?}", actions);
+    // println!("{:?}", actions);
     actions
 }

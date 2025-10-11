@@ -10,6 +10,7 @@ use crate::{
     },
 };
 
+
 impl NeuralNetwork {
     // forward propagation returning activations for all layers
     pub fn feed_forward(&self, x: Vector) -> (Vec<Vector>, Vec<Vector>) {
@@ -39,7 +40,8 @@ impl NeuralNetwork {
     pub fn compute_gradients(
         &self,
         x: &Vector,
-        idx: usize
+        best_idx: usize,
+        legal_moves_idx: &Vec<usize>,
         // d_star: usize,
         // a_star: usize,
     ) -> (Vec<Vector>, Vec<Matrix>) {
@@ -49,8 +51,26 @@ impl NeuralNetwork {
         let mut dw: Vec<Matrix> = init_matrixes(&self.ls, self.is, false);
 
         // Compute dz for output layer (loss gradient)
+        let mut target: Vec<f64> = vec![0.0; self.ls[self.ln - 1]];
+
+        // best_idx = index du meilleur coup dans all_possible_actions
+        target[best_idx] = 1.0;
+
+        // legal_moves_idx = indices de tous les coups légaux dans all_possible_actions
+        for &idx in legal_moves_idx.iter() {
+            if idx != best_idx {
+                target[idx] = 0.1; // petite pénalisation
+            }
+        }
+
+        // Normalisation
+        let sum: f64 = target.iter().sum();
+        for i in 0..target.len() {
+            target[i] /= sum;
+        }
+
         for i in 0..self.ls[self.ln - 1] {
-            dz[self.ln - 1][i] = a[self.ln - 1][i] - if i == idx { 1.0 } else { 0.0 };
+            dz[self.ln - 1][i] = a[self.ln - 1][i] - target[i];
             // let kron_di = if i == d_star { 1.0 } else { 0.0 };
             // let kron_ai = if i == a_star { 1.0 } else { 0.0 };
             // dz[self.ln - 1][i] = a[self.ln - 1][i] - kron_di - kron_ai;
