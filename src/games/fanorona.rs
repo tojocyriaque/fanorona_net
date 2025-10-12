@@ -179,7 +179,7 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
             // minimax(board, 8, -curr_player, &mut best_move, true);
             // play(board, best_move as GMove, -curr_player); 
 
-            let mut x = board.clone();
+            // let mut x = board.clone();
             // Convertir le plateau en f64 (et ajouter éventuellement le joueur si nécessaire)
             let mut x: Vec<i32> = board.iter().map(|&v| v as i32).collect();
             let cv_pos = one_hot(x.to_vec(), 2);
@@ -190,6 +190,7 @@ pub fn play_fanorona(board: &mut FanoronaBoard, model: &str) {
             println!("Bot joue {:?}", (d, a));
 
             play(board, (d, a), -curr_player);
+            println!("Board: {:?}", board);
             show_board(board.to_vec(), 2);
 
             // println!("CPU: G_over: {}", g_over(board));

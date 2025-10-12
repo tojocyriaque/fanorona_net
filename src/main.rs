@@ -9,6 +9,9 @@ use crate::{
     data::restructured_datasets::{transform_dataset, all_possible_actions, split_dataset}
 };
 
+use crate::nn::init::one_hot;
+use crate::games::fanorona::{possible,show_board};
+
 mod data;
 mod games;
 mod maths;
@@ -39,22 +42,22 @@ fn main() {
 
     // CREATING NEW MODELS
     // ==================== TRAINING CONSTANTS ===============================
-    const LEARNING_RATE: f64 = 0.01;
-    const EPOCHS: usize = 500;
-    const STEP_SIZE: usize = EPOCHS/2;
-    const BATCH_SIZE: usize = 2;
-    const TRAIN_FILE: &str = "datasets/indexed/train.txt";
-    const VAL_FILE: &str = "datasets/indexed/test.txt";
-    // this is the directory where you model will be registered
+    // const LEARNING_RATE: f64 = 0.01;
+    // const EPOCHS: usize = 500;
+    // const STEP_SIZE: usize = EPOCHS/2;
+    // const BATCH_SIZE: usize = 2;
+    // const TRAIN_FILE: &str = "datasets/indexed/train.txt";
+    // const VAL_FILE: &str = "datasets/indexed/test.txt";
+    // // this is the directory where you model will be registered
 
-    const MODELS_DIR: &str = "models"; // Directory where models will be saved
-    // This is the identification of your model type
-    const MODEL_NAME: &str = "fn_model_restructured_ng_v6"; // Each model will be saved for every epochs of the training
-    const INPUT_SIZE: usize = 46;
-    // // =======================================================================
-    let layer_sizes: Vec<usize> = vec![64,64,32];
-    let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
-    train_model_with_batch(&mut nn, MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
+    // const MODELS_DIR: &str = "models"; // Directory where models will be saved
+    // // This is the identification of your model type
+    // const MODEL_NAME: &str = "fn_model_restructured_ng_v6"; // Each model will be saved for every epochs of the training
+    // const INPUT_SIZE: usize = 46;
+    // // // =======================================================================
+    // let layer_sizes: Vec<usize> = vec![64,64,32];
+    // let mut nn: NeuralNetwork = NeuralNetwork::new(&layer_sizes, INPUT_SIZE, LEARNING_RATE);
+    // train_model_with_batch(&mut nn, MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
     // continue_train_model_with_batch("models/fn_model_restructured_ng_v3/fn_model_restructured_ng_v3_E100.bin", MODELS_DIR, TRAIN_FILE, VAL_FILE, MODEL_NAME, EPOCHS, BATCH_SIZE, STEP_SIZE);
 
     // // (if it is just an upgrade of a model you can continue it down here by loading the model)
@@ -91,7 +94,16 @@ fn main() {
 
 
     // =================================== PLAYING IN CONSOLE (for model testing maybe)
-    // let mut i_board = vec![-1, 1, 0, 0, -1, 1, 0, -1, 1];
-    // let model = "models/fn_model_restructured_ng_v5/fn_model_restructured_ng_v5_E240.bin";
+    let mut i_board = vec![0, -2, 2, -2, 0, 2, 0, 2, -2];
+
+    let model = "models/fn_model_restructured_ng_v6/fn_model_restructured_ng_v6_E286.bin";
     // play_fanorona(&mut i_board, model);
+
+    show_board(i_board.clone(), 2);
+    println!("{:?}", possible(&i_board.clone(), 1));
+    let mut nn: NeuralNetwork = NeuralNetwork::from_file(model.to_string());
+    let mut x: Vec<i32> = i_board.iter().map(|&v| v as i32).collect();
+    let cv_pos = one_hot(x.to_vec(), 2);
+    let (d, a) = nn.predict_move(cv_pos);
+    println!("{:?}", (d, a));
 }
