@@ -147,7 +147,7 @@ impl Fanorontelo {
     // DISPLAY
     #[allow(unused)]
     pub fn show_board(&self) {
-        println!("-----------------------");
+        println!("-----------");
         for i in 0..3 {
             for j in 0..3 {
                 let idx = 3 * i + j;
@@ -162,12 +162,18 @@ impl Fanorontelo {
             }
             println!()
         }
-        println!("-----------------------")
+        println!("-----------");
     }
 
     // playing the game against a model
     #[allow(unused)]
     pub fn play_with_bot(&mut self, ne: &mut Neural) {
+        println!("| Enter two digits separated by space (square, target), ex:0 1 (to move piece at 0 to square 1)");
+        println!("| square and target are from 0 to 8 ");
+        println!("| index of the squares are :");
+        println!("| 0 1 2\n| 3 4 5\n| 6 7 8");
+        println!("=======================================");
+
         loop {
             // =============== Getting the human player input =======
             let mut input = String::new();
@@ -183,7 +189,7 @@ impl Fanorontelo {
 
             let human = if self.board[9] == 1 { "X" } else { "0" };
             println!(
-                "You... ({human}), Enter two digits separated by space (square, target), ex:0 1"
+                "You... ({human})"
             );
             std::io::stdin().read_line(&mut input);
             let mv: Vec<usize> = input
